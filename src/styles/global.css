@@ -1,0 +1,118 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Sora:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+/*
+  Design tokens (docs/DESIGN.md) — light utility palette.
+  Display: Sora · Body: IBM Plex Sans (not Inter/Roboto/Arial/system).
+*/
+:root {
+	/* Color */
+	--color-bg: #f3f5f7;
+	--color-fg: #152028;
+	--color-muted: #5a6570;
+	--color-accent: #0e7c66;
+	--color-danger: #c0392b;
+
+	/* Typography */
+	--font-display: "Sora", ui-sans-serif, sans-serif;
+	--font-body: "IBM Plex Sans", ui-sans-serif, sans-serif;
+
+	/* Layout */
+	--content-width: 50rem; /* 800px — within 720–880px tool column */
+
+	/* Spacing scale */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-8: 3rem;
+
+	/* Focus */
+	--focus-ring: 2px solid var(--color-accent);
+	--focus-offset: 2px;
+}
+
+/* Tailwind theme bridge — utilities like bg-bg, text-fg, font-display */
+@theme inline {
+	--color-bg: var(--color-bg);
+	--color-fg: var(--color-fg);
+	--color-muted: var(--color-muted);
+	--color-accent: var(--color-accent);
+	--color-danger: var(--color-danger);
+	--font-display: var(--font-display);
+	--font-body: var(--font-body);
+	--max-width-content: var(--content-width);
+}
+
+/* Base typography */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	color-scheme: light;
+	-webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+	margin: 0;
+	width: 100%;
+	min-height: 100%;
+}
+
+body {
+	background-color: var(--color-bg);
+	color: var(--color-fg);
+	font-family: var(--font-body);
+	font-size: 1rem;
+	line-height: 1.6;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-display);
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--color-fg);
+}
+
+p {
+	margin-block: 0 1em;
+	color: var(--color-fg);
+}
+
+a {
+	color: var(--color-accent);
+	text-underline-offset: 0.15em;
+}
+
+a:hover {
+	text-decoration-thickness: 2px;
+}
+
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: var(--focus-offset);
+}
+
+::selection {
+	background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+	color: var(--color-fg);
+}
