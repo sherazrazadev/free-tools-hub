@@ -1,0 +1,54 @@
+.sp-tool__file,
+.sp-tool__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	font-weight: 600;
+}
+.sp-tool__file input[type='file'],
+.sp-tool__field input[type='text'] {
+	font: inherit;
+	font-weight: 400;
+}
+.sp-tool__field {
+	margin-top: 1rem;
+}
+.sp-tool__field input[type='text'] {
+	padding: 0.5rem 0.65rem;
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+	color: var(--color-fg);
+}
+.sp-tool__label {
+	font-size: 0.95rem;
+}
+.sp-tool__hint,
+.sp-tool__meta {
+	margin: 0.5rem 0 0;
+	color: var(--color-muted);
+	font-size: 0.9rem;
+}
+.sp-tool__meta strong {
+	color: var(--color-fg);
+}
+.sp-tool__hint code {
+	font-size: 0.85em;
+}
+.sp-tool__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+.sp-tool__error {
+	margin: 0.85rem 0 0;
+	color: var(--color-danger, #b42318);
+	font-size: 0.95rem;
+}
+.sp-tool__result {
+	margin: 0.85rem 0 0;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--color-accent-deep, var(--color-accent));
+}

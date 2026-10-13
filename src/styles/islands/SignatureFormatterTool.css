@@ -1,0 +1,152 @@
+.sf-tool__file, .sf-tool__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+.sf-tool__file input[type='file'] { font: inherit; font-weight: 400; }
+.sf-tool__label { font-size: 0.95rem; font-weight: 700; }
+.sf-tool__hint, .sf-tool__meta, .sf-tool__preset-meta {
+	margin: 0.45rem 0 0;
+	color: var(--color-muted);
+	font-size: 0.9rem;
+	font-weight: 400;
+	line-height: 1.45;
+}
+.sf-tool__preset-meta a { color: var(--color-accent); }
+.sf-tool__field--full { margin-top: 1rem; }
+.sf-tool__field input, .sf-tool__field select {
+	font: inherit;
+	font-weight: 400;
+	min-height: 2.75rem;
+	padding: 0.55rem 0.75rem;
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+	color: var(--color-fg);
+}
+.sf-tool__field select {
+	appearance: auto;
+	cursor: pointer;
+	width: 100%;
+}
+.sf-tool__field input[type='range'] {
+	padding: 0.35rem 0;
+	border: none;
+	background: transparent;
+}
+.sf-tool__fields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+@media (max-width: 720px) {
+	.sf-tool__fields { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+	.sf-tool__fields { grid-template-columns: 1fr; }
+}
+.sf-tool__crop-wrap { margin-top: 1rem; }
+.sf-tool__stage {
+	position: relative;
+	margin-top: 0.5rem;
+	touch-action: none;
+	user-select: none;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	background: #f3f4f6;
+}
+.sf-tool__stage-img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: min(50vh, 360px);
+	pointer-events: none;
+}
+.sf-tool__crop-box {
+	position: absolute;
+	border: 2px solid var(--color-accent);
+	background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+	cursor: grab;
+	min-width: 44px;
+	min-height: 44px;
+	box-sizing: border-box;
+}
+.sf-tool__crop-box:active { cursor: grabbing; }
+.sf-tool__handle {
+	position: absolute;
+	width: 1.1rem;
+	height: 1.1rem;
+	padding: 0;
+	border: 2px solid #fff;
+	border-radius: 3px;
+	background: var(--color-accent);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--color-fg) 35%, transparent);
+	touch-action: none;
+}
+.sf-tool__handle--nw { left: -0.4rem; top: -0.4rem; cursor: nwse-resize; }
+.sf-tool__handle--ne { right: -0.4rem; top: -0.4rem; cursor: nesw-resize; }
+.sf-tool__handle--sw { left: -0.4rem; bottom: -0.4rem; cursor: nesw-resize; }
+.sf-tool__handle--se { right: -0.4rem; bottom: -0.4rem; cursor: nwse-resize; }
+@media (max-width: 520px) {
+	.sf-tool__handle {
+		width: 1.35rem;
+		height: 1.35rem;
+	}
+	.sf-tool__handle--nw { left: -0.5rem; top: -0.5rem; }
+	.sf-tool__handle--ne { right: -0.5rem; top: -0.5rem; }
+	.sf-tool__handle--sw { left: -0.5rem; bottom: -0.5rem; }
+	.sf-tool__handle--se { right: -0.5rem; bottom: -0.5rem; }
+}
+.sf-tool__check {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+	margin-top: 0.85rem;
+	font-size: 0.95rem;
+	cursor: pointer;
+}
+.sf-tool__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+.sf-tool__error {
+	margin: 0.85rem 0 0;
+	color: var(--color-danger, #b42318);
+}
+.sf-tool__result { margin-top: 1.25rem; }
+.sf-tool__result-label {
+	margin: 0 0 0.5rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--color-muted);
+}
+.sf-tool__ok { color: var(--color-ok, #067647); }
+.sf-tool__warn { color: var(--color-danger, #b42318); }
+.sf-tool__warn-msg {
+	margin: 0 0 0.75rem;
+	padding: 0.65rem 0.75rem;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--color-danger, #b42318) 35%, var(--color-border));
+	background: color-mix(in srgb, var(--color-danger, #b42318) 8%, var(--color-surface));
+	font-size: 0.92rem;
+}
+.sf-tool__plain {
+	padding: 1.25rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100px;
+}
+.sf-tool__out-img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}

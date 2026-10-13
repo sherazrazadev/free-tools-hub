@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProsePage from '../components/ui/ProsePage.astro';
+
+const updated = '13 October 2026';
+---
+
+<BaseLayout
+	title="Terms of Use | TommyTools"
+	description="Terms of use for TommyTools (tools.tommyfx.pk): free browser utilities provided as-is, with limits on advice and liability."
+>
+	<ProsePage title="Terms of Use">
+		<p><time datetime="2026-10-13">Last updated: {updated}</time></p>
+
+		<p>
+			By using <strong>TommyTools</strong> (`tools.tommyfx.pk`), you agree to these terms. If you do
+			not agree, do not use the site.
+		</p>
+
+		<h2>The service</h2>
+		<p>
+			TommyTools provides free browser-based utilities. Features may change, move, or be removed. There
+			are no paid accounts for core tools in v1.
+		</p>
+
+		<h2>No professional advice</h2>
+		<ul>
+			<li>
+				Calculators produce estimates for convenience. They are not legal, payroll, tax, or
+				financial advice.
+			</li>
+			<li>
+				Image or document presets are helpers only. We do not guarantee acceptance by any
+				authority, employer, or application portal.
+			</li>
+			<li>
+				AI governance or security checklists are informal self-assessments, not certification or
+				security audits.
+			</li>
+		</ul>
+
+		<h2>Your responsibility</h2>
+		<p>
+			You are responsible for the inputs you provide and for verifying important results before
+			you rely on them. Do not upload or paste secrets into tools unless you accept the risk that
+			browser extensions or local malware could access the page.
+		</p>
+
+		<h2>Availability and liability</h2>
+		<p>
+			The site is provided “as is” and “as available,” without warranties of any kind to the
+			extent permitted by law. We are not liable for losses arising from use of the tools or from
+			downtime, bugs, or inaccurate outputs, except where liability cannot be limited by law.
+		</p>
+
+		<h2>Acceptable use</h2>
+		<p>
+			Do not misuse the site (for example attempting to disrupt service, scrape in a way that
+			harms availability, or using any security-related checklist as attack guidance). Security
+			utilities are for defensive self-assessment only.
+		</p>
+
+		<h2>Privacy</h2>
+		<p>
+			How we handle privacy is described in the <a href="/privacy">Privacy</a> page.
+		</p>
+
+		<h2>Contact</h2>
+		<p>
+			Questions: <a href="/contact">Contact</a>.
+		</p>
+	</ProsePage>
+</BaseLayout>

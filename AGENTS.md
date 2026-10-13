@@ -1,4 +1,4 @@
-# AGENTS.md — Tools (`tools.tommyfx.pk`)
+# AGENTS.md - Tools (`tools.tommyfx.pk`)
 
 ## Mission
 

@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProsePage from '../components/ui/ProsePage.astro';
+
+const updated = '13 October 2026';
+---
+
+<BaseLayout
+	title="Privacy Policy | TommyTools"
+	description="Privacy Policy for TommyTools: browser-local processing intent, analytics policy, Google Fonts disclosure, and what we collect today."
+>
+	<ProsePage title="Privacy Policy">
+		<p><time datetime="2026-10-13">Last updated: {updated}</time></p>
+
+		<p>
+			This page describes how <strong>TommyTools</strong> (`tools.tommyfx.pk`) handles privacy
+			<strong>based on the code and services in use today</strong>. Claims about local processing
+			only apply when a specific tool states that behavior and the implementation matches it.
+		</p>
+
+		<h2>Browser-local processing (intent)</h2>
+		<p>
+			Core tools are designed to process inputs in your browser. When a tool says work stays on
+			your device, that tool must not upload your files or sensitive inputs to our servers for
+			processing. If a future tool needs a network request, that page will say so clearly.
+		</p>
+		<p>
+			We do not offer user accounts, cloud file storage, or a product database in v1. There is no
+			server-side file conversion pipeline for core tools today.
+		</p>
+
+		<h2>What we collect today</h2>
+		<p>
+			<strong>Product analytics are off by default.</strong> The site includes an optional,
+			privacy-limited analytics helper. It loads Google Analytics 4
+			<strong>only when the operator sets</strong> <code>PUBLIC_GA_MEASUREMENT_ID</code> at build
+			time. If that variable is empty (the normal case), no analytics script is loaded and no
+			product events are sent.
+		</p>
+		<p>
+			When analytics is enabled, the helper may send only these event names:
+			<code>tool_start</code>, <code>tool_complete</code>, and <code>tool_export</code>, plus a
+			coarse <code>tool_id</code> (the tool’s route slug, for example <code>work-hours</code>).
+			We do <strong>not</strong> send file contents, uploaded bytes, timesheet values, calculator
+			inputs, checklist answers, or other sensitive form data to analytics.
+		</p>
+		<p>
+			Hosting and CDN providers (for example Cloudflare Pages, when the site is deployed) may
+			process standard technical logs such as IP address, user agent, and requested URLs as part
+			of delivering the site. That is infrastructure logging, not an application feature that
+			reads your tool inputs.
+		</p>
+
+		<h2>Third-party resources</h2>
+		<p>
+			This site currently loads fonts from Google Fonts (`fonts.googleapis.com` /
+			`fonts.gstatic.com`). Your browser may contact Google’s servers to fetch those font files.
+			We do not send your tool inputs to Google Fonts.
+		</p>
+
+		<h2>Ads</h2>
+		<p>
+			<strong>Ads are off by default.</strong> The layout can reserve separate ad zones
+			<em>below</em> tools and in the help rail when the operator sets
+			<code>PUBLIC_ADS_ENABLED=true</code>. Those zones do not sit on upload controls, primary
+			action buttons, or result areas. No AdSense script is loaded until the operator confirms
+			eligibility (SOP §12) and wires an approved unit. If ads are turned on, this policy will be
+			updated with the provider details.
+		</p>
+
+		<h2>Contact</h2>
+		<p>
+			Questions about this policy: see <a href="/contact">Contact</a>.
+		</p>
+	</ProsePage>
+</BaseLayout>

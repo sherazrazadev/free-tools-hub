@@ -1,0 +1,60 @@
+---
+/**
+ * Stub tool page - demonstrates ToolLayout + island.
+ * noindex: not a product tool; remove or replace when unused.
+ */
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import TemplateDemoTool from '../../components/tools/TemplateDemoTool';
+---
+
+<ToolLayout
+	title="Template demo tool | TommyTools"
+	description="Internal template demonstrating the Tools page layout. Not a published product utility."
+	heading="Template demo tool"
+	purpose="This page proves the shared tool layout: working control near the top, then instructions, example, method, limits, FAQ, related links, and privacy."
+	category="Foundation"
+	categoryHref="/"
+	noindex={true}
+>
+	<div slot="tool">
+		<TemplateDemoTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Enter two numbers in Value A and Value B.</li>
+			<li>Select Calculate to add them in your browser.</li>
+			<li>Select Reset to restore the sample values.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			If Value A is <strong>8</strong> and Value B is <strong>1.5</strong>, the result is
+			<strong> 9.5</strong>.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			The demo computes <code>A + B</code> with JavaScript in the browser. No data is sent to a
+			server for this calculation.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>Non-numeric input shows an inline error; it does not crash the page.</li>
+			<li>This is a layout stub, not a payroll or timesheet calculator.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li><a href="/">Home</a> - platform overview and categories</li>
+			<li><a href="/about">About</a> - how Tools is built</li>
+		</ul>
+	</div>
+
+</ToolLayout>

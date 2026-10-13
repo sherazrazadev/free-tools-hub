@@ -1,0 +1,94 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import SplitPdfTool from '../../components/tools/SplitPdfTool';
+import { MAX_PDF_BYTES, bytesToMbFloor } from '../../lib/tools/pdf/limits';
+
+const maxMb = bytesToMbFloor(MAX_PDF_BYTES);
+---
+
+<ToolLayout
+	title="Split PDF - Extract pages in your browser | TommyTools"
+	description="Free PDF splitter: choose page ranges (1-based), extract pages, and download a new PDF. Processed locally with pdf-lib - files are not uploaded."
+	heading="PDF splitter"
+	purpose="Extract selected pages from a PDF into a new file in your browser. Enter 1-based page ranges, then download the result."
+	category="Files & media"
+	categoryHref="/?tools=files-media"
+>
+	<div slot="tool">
+		<SplitPdfTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose a PDF from your device.</li>
+			<li>
+				Enter the pages to keep using <strong>1-based numbering</strong> (page 1 is the first page),
+				e.g. <code>1-3,5</code>.
+			</li>
+			<li>Select <strong>Extract and download</strong> to save a new PDF with only those pages.</li>
+			<li>Use <strong>Clear</strong> to discard the file and start over.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: a 6-page PDF with ranges <strong>2-3,6</strong> produces a 3-page download containing
+			original pages 2, 3, then 6 - in that order. Readers show them as pages 1–3 of the new file.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			<strong>Page numbering:</strong> this tool uses the same counting as most PDF readers - the first
+			page is <strong>1</strong>, not 0.<br />
+			Ranges: <code>a-b</code> includes every page from a through b inclusive. Commas list extra pages or
+			ranges. Duplicates are skipped. Selected pages are copied (via <code>pdf-lib</code>) into a new
+			document in the order you listed them.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<h3>Size limits</h3>
+		<ul>
+			<li>
+				Soft cap (enforced in the tool): <strong>{maxMb} MB</strong> per PDF (same as the merger).
+			</li>
+			<li>
+				Under the cap is not a guarantee of success - page count and image-heavy scans still use
+				memory.
+			</li>
+		</ul>
+
+		<h3>Mobile and memory</h3>
+		<ul>
+			<li>
+				Split runs entirely in your browser tab. Low-memory phones can freeze or fail on large or
+				scanned PDFs even when the file is under {maxMb} MB.
+			</li>
+			<li>
+				If extract fails on mobile, try a computer, close other tabs/apps, or extract a smaller page
+				range first.
+			</li>
+		</ul>
+
+		<h3>Common mistakes</h3>
+		<ul>
+			<li>Password-protected / encrypted PDFs are not supported - unlock them first.</li>
+			<li>Out-of-range pages (above the document length) are rejected with an error.</li>
+			<li>Forms, bookmarks, and some advanced PDF features may not be preserved exactly.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/merge-pdf">PDF merger</a>
+			</li>
+			<li>
+				<a href="/tools/image-compressor">Image compressor</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

@@ -1,80 +1,140 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Sora:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
 @import "tailwindcss";
 
 /*
-  Design tokens (docs/DESIGN.md) — light utility palette.
-  Display: Sora · Body: IBM Plex Sans (not Inter/Roboto/Arial/system).
+  Tools design system v2 - clean utility SaaS.
+  Plus Jakarta Sans · cool paper · calibrated teal
+  See docs/DESIGN.md
 */
 :root {
-	/* Color */
-	--color-bg: #f3f5f7;
-	--color-fg: #152028;
-	--color-muted: #5a6570;
-	--color-accent: #0e7c66;
-	--color-danger: #c0392b;
+  /* Color */
+  --color-bg: #f3f5f7;
+  --color-bg-elevated: #fafbfc;
+  --color-surface: #ffffff;
+  --color-fg: #121820;
+  --color-muted: #4a5560;
+  --color-accent: #0a7a6c;
+  --color-accent-deep: #065f55;
+  --color-accent-bright: #1a9d8c;
+  --color-hero-gold: #f5d76e;
+  --color-danger: #b42318;
+  --color-border: color-mix(in srgb, var(--color-fg) 10%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--color-fg) 18%, transparent);
+  --color-footer-bg: #1a222c;
+  --color-footer-fg: #f4f6f8;
+  --color-footer-muted: #a8b2bc;
 
-	/* Typography */
-	--font-display: "Sora", ui-sans-serif, sans-serif;
-	--font-body: "IBM Plex Sans", ui-sans-serif, sans-serif;
+  /* Typography */
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-mono: "Plus Jakarta Sans", ui-monospace, monospace;
 
-	/* Layout */
-	--content-width: 50rem; /* 800px — within 720–880px tool column */
+  /* Layout */
+  --content-width: 70rem;
+  --shell-width: 80rem;
 
-	/* Spacing scale */
-	--space-1: 0.25rem;
-	--space-2: 0.5rem;
-	--space-3: 0.75rem;
-	--space-4: 1rem;
-	--space-5: 1.5rem;
-	--space-6: 2rem;
-	--space-8: 3rem;
+  /* Radii - soft modern edges */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
 
-	/* Focus */
-	--focus-ring: 2px solid var(--color-accent);
-	--focus-offset: 2px;
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3.5rem;
+  --space-10: 5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-med: 240ms;
+
+  /* Focus */
+  --focus-ring: 2px solid var(--color-accent);
+  --focus-offset: 3px;
+
+  /* Atmosphere */
+  --grid-line: color-mix(in srgb, var(--color-fg) 6%, transparent);
+  --shadow-soft: 0 8px 30px rgba(16, 24, 32, 0.08);
+  --shadow-menu: 0 16px 48px rgba(16, 24, 32, 0.12);
 }
 
-/* Tailwind theme bridge — utilities like bg-bg, text-fg, font-display */
 @theme inline {
-	--color-bg: var(--color-bg);
-	--color-fg: var(--color-fg);
-	--color-muted: var(--color-muted);
-	--color-accent: var(--color-accent);
-	--color-danger: var(--color-danger);
-	--font-display: var(--font-display);
-	--font-body: var(--font-body);
-	--max-width-content: var(--content-width);
+  --color-bg: var(--color-bg);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-surface: var(--color-surface);
+  --color-fg: var(--color-fg);
+  --color-muted: var(--color-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-deep: var(--color-accent-deep);
+  --color-danger: var(--color-danger);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --max-width-content: var(--content-width);
 }
 
-/* Base typography */
+/* React islands must paint as blocks (not display:contents). */
+astro-island {
+  display: block;
+  width: 100%;
+}
+
 *,
 *::before,
 *::after {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html {
-	color-scheme: light;
-	-webkit-text-size-adjust: 100%;
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  font-size: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 html,
 body {
-	margin: 0;
-	width: 100%;
-	min-height: 100%;
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
 }
 
 body {
-	background-color: var(--color-bg);
-	color: var(--color-fg);
-	font-family: var(--font-body);
-	font-size: 1rem;
-	line-height: 1.6;
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(
+      120% 80% at 0% -10%,
+      color-mix(in srgb, var(--color-accent) 10%, transparent),
+      transparent 52%
+    ),
+    radial-gradient(
+      90% 60% at 100% 0%,
+      color-mix(in srgb, #0b4f6c 7%, transparent),
+      transparent 48%
+    ),
+    linear-gradient(180deg, var(--color-bg-elevated), var(--color-bg) 48%);
+  /* Avoid fixed attachment - hurts scroll/paint cost on mobile (LCP/CLS adjacent). */
+  background-attachment: scroll;
+  color: var(--color-fg);
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -83,36 +143,95 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: var(--font-display);
-	font-weight: 600;
-	line-height: 1.25;
-	color: var(--color-fg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--color-fg);
 }
 
 p {
-	margin-block: 0 1em;
-	color: var(--color-fg);
+  margin-block: 0 1em;
+  color: var(--color-fg);
 }
 
 a {
-	color: var(--color-accent);
-	text-underline-offset: 0.15em;
+  color: var(--color-accent-deep);
+  text-underline-offset: 0.18em;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 a:hover {
-	text-decoration-thickness: 2px;
+  color: var(--color-accent);
 }
 
 :focus {
-	outline: none;
+  outline: none;
 }
 
 :focus-visible {
-	outline: var(--focus-ring);
-	outline-offset: var(--focus-offset);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
 }
 
 ::selection {
-	background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
-	color: var(--color-fg);
+  background-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  color: var(--color-fg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 6px 18px
+    color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-deep);
+  color: #fff;
+}
+
+.btn--ghost {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-fg);
+}
+
+.btn--ghost:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-deep);
+}
+
+.btn--hero-primary,
+.btn--hero-ghost {
+  border-radius: var(--radius-pill);
+  min-height: 2.9rem;
+  padding-inline: 1.35rem;
 }

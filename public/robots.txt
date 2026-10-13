@@ -1,0 +1,6 @@
+# https://tools.tommyfx.pk
+User-agent: *
+Allow: /
+
+# Stub / unfinished demos use noindex in HTML; keep crawl open for public pages.
+Sitemap: https://tools.tommyfx.pk/sitemap-index.xml

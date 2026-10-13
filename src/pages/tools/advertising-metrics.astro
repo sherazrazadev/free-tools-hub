@@ -1,0 +1,85 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import AdvertisingMetricsTool from '../../components/tools/AdvertisingMetricsTool';
+---
+
+<ToolLayout
+	title="Advertising Metrics Calculator - CPM, CPC, CTR, CPA, ROAS | TommyTools"
+	description="Free advertising metrics calculator: CPM, CPC, CTR, CPA, conversion rate, and ROAS from spend, impressions, clicks, conversions, and revenue. Formulas shown. Not investment advice."
+	heading="Advertising metrics calculator"
+	purpose="Enter campaign totals and get CPM, CPC, CTR, CPA, conversion rate, and ROAS - with the formula under each result. Runs in your browser."
+	category="Business & finance"
+	categoryHref="/?tools=business-finance"
+>
+	<div slot="tool">
+		<AdvertisingMetricsTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Enter <strong>advertising spend</strong> and <strong>attributed revenue</strong> in the same currency.</li>
+			<li>Enter <strong>impressions</strong>, <strong>clicks</strong>, and <strong>conversions</strong> (whole numbers or decimals as your report uses).</li>
+			<li>Read each metric’s value, definition, and formula below the inputs.</li>
+			<li>If a denominator is zero (for example spend = 0 for ROAS), that metric shows as not calculable - never as infinity.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example inputs: spend <strong>100</strong>, impressions <strong>50,000</strong>, clicks{' '}
+			<strong>500</strong>, conversions <strong>25</strong>, attributed revenue <strong>400</strong>.
+		</p>
+		<ul>
+			<li>CPM = (100 / 50,000) × 1,000 = <strong>2</strong></li>
+			<li>CPC = 100 / 500 = <strong>0.20</strong></li>
+			<li>CTR = 500 / 50,000 = <strong>1.00%</strong></li>
+			<li>CPA = 100 / 25 = <strong>4</strong></li>
+			<li>Conversion rate = 25 / 500 = <strong>5.00%</strong></li>
+			<li>ROAS = 400 / 100 = <strong>4×</strong></li>
+		</ul>
+		<p>
+			If spend is <strong>0</strong>, ROAS is not calculated (undefined), even if revenue is positive.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<ul>
+			<li><code>CPM = (Spend / Impressions) × 1000</code></li>
+			<li><code>CPC = Spend / Clicks</code></li>
+			<li><code>CTR = Clicks / Impressions</code></li>
+			<li><code>CPA = Spend / Conversions</code></li>
+			<li><code>Conversion rate = Conversions / Clicks</code></li>
+			<li><code>ROAS = Attributed Revenue / Advertising Spend</code></li>
+		</ul>
+		<p>
+			CTR and conversion rate are shown as percentages. ROAS is a ratio (for example 4×), not a
+			profit figure and not overall return on investment.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Not investment, tax, accounting, or legal advice.</strong> These are arithmetic
+				helpers for campaign reports you already have.
+			</li>
+			<li>ROAS uses attributed revenue you enter - attribution quality is your responsibility.</li>
+			<li>ROAS ≠ profit and ≠ overall ROI (other costs and capital are ignored).</li>
+			<li>Zero denominators produce “cannot calculate,” never Infinity.</li>
+			<li>Clicks cannot exceed impressions; conversions cannot exceed clicks.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/freelancer-rate">Freelancer rate</a>
+			</li>
+			<li>
+				<a href="/tools/work-hours">Work hours calculator</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

@@ -1,0 +1,75 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import NistAiRmfChecklistTool from '../../components/tools/NistAiRmfChecklistTool';
+---
+
+<ToolLayout
+	title="NIST AI RMF Checklist - Informal self-assessment | TommyTools"
+	description="Informal checklist aligned to NIST AI RMF 1.0 (GOVERN, MAP, MEASURE, MANAGE). Transparent scoring and downloadable report. Not an official NIST assessment or certification."
+	heading="NIST AI RMF–aligned checklist"
+	purpose="Informal self-assessment for NIST AI RMF 1.0 Core functions (GOVERN → MAP → MEASURE → MANAGE). Sixteen focused prompts — work one function at a time. Not an official NIST assessment."
+	category="AI governance"
+	categoryHref="/?tools=ai-governance"
+>
+	<div slot="tool">
+		<NistAiRmfChecklistTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Read each function’s purpose, then answer Yes / No / N/A.</li>
+			<li>Each item shows its mapped NIST subcategory reference.</li>
+			<li>Optional: save a draft in this browser’s localStorage.</li>
+			<li>Download a text report that includes your answers, gaps, and the framework version note.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: under GOVERN you mark “Is there a maintained inventory of AI systems?” as{' '}
+			<strong>No</strong> (mapped to GOVERN 1.6). The summary lists that gap and suggests updating an
+			AI system inventory. The report repeats your answers - it does not certify compliance.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			<strong>Framework:</strong> NIST AI RMF 1.0 (NIST AI 100-1), published 2023-01-26. Sources
+			verified 2026-10-13. Landing:{' '}
+			<a href="https://www.nist.gov/itl/ai-risk-management-framework" rel="noopener noreferrer"
+				>nist.gov/itl/ai-risk-management-framework</a
+			>.
+		</p>
+		<p>
+			<strong>Scoring:</strong> Completion % = answered / total. Addressed % = Yes / (Yes + No). Gaps =
+			No answers. These are checklist metrics only - not a NIST score.
+		</p>
+		<p>
+			NIST has indicated AI RMF 1.0 is being revised; this tool maps to <strong>1.0 as published</strong>.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Not an official NIST assessment, endorsement, or certification.</strong>
+			</li>
+			<li>Subset of Core subcategories for a practical self-check - not the full Framework.</li>
+			<li>No LLM calls; deterministic local scoring only.</li>
+			<li>Source verification notes live in the repo at <code>docs/SOURCES-AI-GOV.md</code>.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/ai-system-risk-checklist">AI system risk checklist</a>
+			</li>
+			<li>
+				<a href="/tools/owasp-llm-top10-checklist">OWASP LLM Top 10 checklist</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

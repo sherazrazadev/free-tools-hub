@@ -1,0 +1,82 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import FreelancerRateTool from '../../components/tools/FreelancerRateTool';
+---
+
+<ToolLayout
+	title="Freelancer Rate Calculator - Hourly & daily rate estimate | TommyTools"
+	description="Free freelancer rate calculator: target income, weeks, billable hours, expenses, and margin → required hourly and daily rates. Planning estimate only - not tax advice."
+	heading="Freelancer rate calculator"
+	purpose="Estimate the hourly and daily rates you may need to hit a yearly income goal after expenses and an optional reserve. Planning estimate only - not a guarantee of income or a tax calculation."
+	category="Business & finance"
+	categoryHref="/?tools=business-finance"
+>
+	<div slot="tool">
+		<FreelancerRateTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Enter your <strong>target annual income</strong> and yearly <strong>business expenses</strong>.</li>
+			<li>Set how many <strong>weeks</strong> and <strong>billable hours per week</strong> you expect.</li>
+			<li>Optional: add a <strong>reserve / margin %</strong> so rates cover a buffer above income + expenses.</li>
+			<li>Read the required billings, hourly rate, daily rate, and margin scenario table.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: income <strong>60,000</strong>, expenses <strong>8,000</strong>,{' '}
+			<strong>48</strong> weeks × <strong>25</strong> billable hours/week, margin{' '}
+			<strong>15%</strong>, <strong>5</strong> days/week.
+		</p>
+		<ul>
+			<li>Annual billable hours = 48 × 25 = <strong>1,200</strong></li>
+			<li>Required billings = (60,000 + 8,000) / (1 − 0.15) = <strong>80,000</strong></li>
+			<li>Hourly rate = 80,000 / 1,200 = <strong>66.67</strong></li>
+			<li>Daily rate = 66.67 × (25 / 5) = <strong>333.35</strong></li>
+		</ul>
+	</div>
+
+	<div slot="formula">
+		<ul>
+			<li><code>Annual billable hours = Weeks × Billable hours per week</code></li>
+			<li>
+				<code>Required billings = (Target income + Expenses) / (1 − Margin%)</code>
+			</li>
+			<li><code>Hourly rate = Required billings / Annual billable hours</code></li>
+			<li>
+				<code>Daily rate = Hourly rate × (Hours per week / Days per week)</code>
+			</li>
+		</ul>
+		<p>
+			If margin is 0%, required billings equal income + expenses. Margin must be below 100%.
+			Zero billable hours cannot produce a rate.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Planning estimate only</strong> - not a guarantee of income, and not tax, payroll,
+				or legal advice.
+			</li>
+			<li>Does not model taxes, benefits, unpaid leave, or non-billable admin time beyond what you enter.</li>
+			<li>Daily rate assumes billable hours spread evenly across the days/week you set.</li>
+			<li>Market rates and utilization vary; treat results as a starting point.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/advertising-metrics">Advertising metrics</a>
+			</li>
+			<li>
+				<a href="/tools/work-hours">Work hours calculator</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

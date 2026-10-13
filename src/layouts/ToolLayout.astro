@@ -1,0 +1,484 @@
+---
+/**
+ * Shared tool page shell.
+ * Desktop: primary column + sticky right rail (related first, then help).
+ * Mobile: tool first, related next, help sections in collapsed details.
+ * Slots: tool (required), instructions, example, formula, limitations, related.
+ * FAQ / Privacy live on site pages — not duplicated in the tool rail.
+ */
+import AdSlot from '../components/ads/AdSlot.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	/** Visible H1 - one per page. */
+	heading: string;
+	/** Short purpose under the H1 (also crawlable intro). */
+	purpose: string;
+	/** Category / breadcrumb label */
+	category?: string;
+	categoryHref?: string;
+	noindex?: boolean;
+}
+
+const {
+	title,
+	description,
+	heading,
+	purpose,
+	category = 'Tools',
+	categoryHref = '/?tools=1',
+	noindex = false,
+} = Astro.props;
+
+const hasInstructions = Astro.slots.has('instructions');
+const hasExample = Astro.slots.has('example');
+const hasFormula = Astro.slots.has('formula');
+const hasLimitations = Astro.slots.has('limitations');
+const hasRelated = Astro.slots.has('related');
+const hasAside =
+	hasRelated || hasInstructions || hasExample || hasFormula || hasLimitations;
+---
+
+<BaseLayout title={title} description={description} noindex={noindex}>
+	<article class="tool-page">
+		<header class="tool-page__intro">
+			<p class="tool-page__crumb">
+				<a href="/">TommyTools</a>
+				<span aria-hidden="true">/</span>
+				<a href={categoryHref}>{category}</a>
+			</p>
+			<h1>{heading}</h1>
+			<p class="tool-page__purpose">{purpose}</p>
+		</header>
+
+		<div class:list={['tool-page__layout', { 'tool-page__layout--solo': !hasAside }]}>
+			<div class="tool-page__primary">
+				<section class="tool-page__tool" aria-label="Tool">
+					<slot name="tool" />
+				</section>
+				{/* Below the tool - never on uploads/buttons/results inside the island */}
+				<div class="tool-page__ad tool-page__ad--after-tool">
+					<AdSlot zone="after-tool" size="banner" />
+				</div>
+			</div>
+
+			{
+				hasAside && (
+					<aside class="tool-page__aside" aria-label="Tool help and related">
+						{
+							hasRelated && (
+								<section
+									class="tool-page__aside-block tool-page__related"
+									aria-labelledby="tool-related"
+								>
+									<h2 id="tool-related">Related tools</h2>
+									<slot name="related" />
+								</section>
+							)
+						}
+
+						<div class="tool-page__ad tool-page__ad--rail">
+							<AdSlot zone="tool-rail" size="rail" />
+						</div>
+
+						{
+							hasInstructions && (
+								<details class="tool-page__panel" open>
+									<summary>
+										<span>How to use</span>
+									</summary>
+									<div class="tool-page__panel-body">
+										<slot name="instructions" />
+									</div>
+								</details>
+							)
+						}
+
+						{
+							hasExample && (
+								<details class="tool-page__panel">
+									<summary>
+										<span>Worked example</span>
+									</summary>
+									<div class="tool-page__panel-body">
+										<slot name="example" />
+									</div>
+								</details>
+							)
+						}
+
+						{
+							hasFormula && (
+								<details class="tool-page__panel">
+									<summary>
+										<span>How it works</span>
+									</summary>
+									<div class="tool-page__panel-body">
+										<slot name="formula" />
+									</div>
+								</details>
+							)
+						}
+
+						{
+							hasLimitations && (
+								<details class="tool-page__panel">
+									<summary>
+										<span>Limitations and common mistakes</span>
+									</summary>
+									<div class="tool-page__panel-body">
+										<slot name="limitations" />
+									</div>
+								</details>
+							)
+						}
+
+
+					</aside>
+				)
+			}
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.tool-page {
+		width: min(100% - 2rem, var(--shell-width));
+		margin: 0 auto;
+		padding: var(--space-6) 0 var(--space-8);
+	}
+
+	.tool-page__intro {
+		margin-bottom: var(--space-6);
+		padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1.15rem, 2.5vw, 1.6rem);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 18%, var(--color-border));
+		border-radius: var(--radius-lg);
+		background:
+			radial-gradient(90% 140% at 100% -10%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 55%),
+			linear-gradient(165deg, color-mix(in srgb, var(--color-accent) 6%, #fff) 0%, var(--color-bg-elevated) 100%);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.tool-page__crumb {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0 0 var(--space-3);
+		font-size: 0.82rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.tool-page__crumb a {
+		color: var(--color-accent-deep);
+		text-decoration: none;
+	}
+
+	.tool-page__crumb a:hover {
+		color: var(--color-accent);
+	}
+
+	.tool-page h1 {
+		margin: 0 0 var(--space-3);
+		font-size: clamp(1.9rem, 4.5vw, 2.55rem);
+		letter-spacing: -0.04em;
+	}
+
+	.tool-page__purpose {
+		margin: 0;
+		max-width: 48rem;
+		font-size: 1.08rem;
+		line-height: 1.55;
+		color: var(--color-muted);
+	}
+
+	.tool-page__layout {
+		display: grid;
+		gap: var(--space-5);
+		align-items: start;
+	}
+
+	.tool-page__layout--solo {
+		grid-template-columns: 1fr;
+	}
+
+	.tool-page__tool {
+		margin: 0;
+		padding: var(--space-5);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-soft);
+		min-height: 12rem;
+	}
+
+	/* Keep island content paint-visible (WebKit display:contents bugs). */
+	.tool-page__tool :global(astro-island) {
+		display: block;
+		width: 100%;
+	}
+
+	.tool-page__primary {
+		display: grid;
+		gap: var(--space-5);
+		min-width: 0;
+	}
+
+	.tool-page__ad:empty {
+		display: none;
+	}
+
+	.tool-page__ad:not(:has(.ad-slot)) {
+		display: none;
+	}
+
+	.tool-page__aside {
+		display: grid;
+		gap: var(--space-3);
+		min-width: 0;
+	}
+
+	.tool-page__aside-block,
+	.tool-page__panel {
+		margin: 0;
+		padding: var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.tool-page__aside-block h2,
+	.tool-page__panel summary {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		color: var(--color-fg);
+	}
+
+	.tool-page__aside-block h2 {
+		margin-bottom: var(--space-3);
+	}
+
+	.tool-page__related {
+		order: -1;
+		border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+		box-shadow: var(--shadow-soft);
+	}
+
+	.tool-page__related h2 {
+		font-size: 1.2rem;
+		color: var(--color-accent-deep);
+	}
+
+	.tool-page__panel summary {
+		cursor: pointer;
+		list-style: none;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+	}
+
+	.tool-page__panel summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.tool-page__panel summary::after {
+		content: '+';
+		flex-shrink: 0;
+		color: var(--color-muted);
+		font-weight: 700;
+		font-size: 1.1rem;
+		line-height: 1;
+	}
+
+	.tool-page__panel[open] summary::after {
+		content: '−';
+	}
+
+	.tool-page__panel summary:focus-visible {
+		outline: var(--focus-ring);
+		outline-offset: var(--focus-offset);
+		border-radius: var(--radius-sm);
+	}
+
+	.tool-page__panel-body {
+		margin-top: var(--space-3);
+	}
+
+	.tool-page__aside :global(h3) {
+		margin: var(--space-4) 0 var(--space-2);
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--color-fg);
+	}
+
+	.tool-page__aside :global(h3:first-child) {
+		margin-top: 0;
+	}
+
+	.tool-page__aside :global(p),
+	.tool-page__aside :global(li) {
+		color: var(--color-muted);
+	}
+
+	.tool-page__aside :global(ul),
+	.tool-page__aside :global(ol) {
+		margin: 0 0 1em;
+		padding-left: 1.2rem;
+	}
+
+	.tool-page__aside :global(li) {
+		margin-bottom: var(--space-2);
+	}
+
+	.tool-page__aside :global(a) {
+		font-weight: 600;
+	}
+
+	.tool-page__aside :global(dl) {
+		margin: 0;
+	}
+
+	.tool-page__aside :global(dt) {
+		margin-top: var(--space-4);
+		font-family: var(--font-display);
+		font-weight: 700;
+		color: var(--color-fg);
+	}
+
+	.tool-page__aside :global(dt:first-child) {
+		margin-top: 0;
+	}
+
+	.tool-page__aside :global(dd) {
+		margin: var(--space-1) 0 0;
+		color: var(--color-muted);
+	}
+
+
+	.tool-page__aside :global(.related-list),
+	.tool-page__related :global(ul) {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.tool-page__aside :global(.related-list a),
+	.tool-page__related :global(ul a) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.45rem 0;
+		border: 0;
+		background: none;
+		color: var(--color-fg);
+		font-family: var(--font-display);
+		font-size: 1rem;
+		font-weight: 700;
+		text-decoration: none;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.tool-page__related :global(ul a)::after {
+		content: '→';
+		color: var(--color-muted);
+		font-weight: 700;
+	}
+
+	.tool-page__related :global(ul a:hover) {
+		color: var(--color-accent-deep);
+		background: none;
+	}
+
+	.tool-page__related :global(ul a:hover)::after {
+		color: var(--color-accent-deep);
+	}
+
+	.tool-page__related :global(ul li) {
+		color: inherit;
+		margin: 0;
+	}
+
+	@media (min-width: 960px) {
+		.tool-page__layout:not(.tool-page__layout--solo) {
+			grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+			gap: var(--space-6);
+		}
+
+		.tool-page__aside {
+			position: sticky;
+			top: 4.75rem;
+			max-height: calc(100vh - 5.5rem);
+			overflow: auto;
+			padding-right: 0.15rem;
+		}
+
+		/* Desktop: keep help readable without forcing accordion clicks. */
+		.tool-page__panel {
+			padding: var(--space-4);
+		}
+
+		.tool-page__panel summary {
+			pointer-events: none;
+		}
+
+		.tool-page__panel summary::after {
+			display: none;
+		}
+	}
+
+	@media (max-width: 959px) {
+		.tool-page__tool {
+			padding: var(--space-4);
+			min-height: 8rem;
+		}
+
+		.tool-page {
+			padding-bottom: var(--space-6);
+		}
+	}
+
+	@media print {
+		.tool-page__aside {
+			display: none !important;
+		}
+
+		.tool-page__layout {
+			display: block;
+		}
+	}
+</style>
+
+<script>
+	/**
+	 * Desktop: keep help panels open so the rail is always scannable.
+	 * Mobile: leave browser default (How to use open; others collapsed).
+	 */
+	const mq = window.matchMedia('(min-width: 960px)');
+
+	function syncPanels() {
+		const panels = document.querySelectorAll('.tool-page__panel');
+		for (const panel of panels) {
+			if (!(panel instanceof HTMLDetailsElement)) continue;
+			if (mq.matches) {
+				panel.open = true;
+			}
+		}
+	}
+
+	syncPanels();
+	mq.addEventListener('change', syncPanels);
+</script>

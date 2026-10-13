@@ -1,0 +1,721 @@
+---
+import '../styles/global.css';
+import Analytics from '../components/Analytics.astro';
+import ToolIcon from '../components/ui/ToolIcon.astro';
+import { getGoogleSiteVerification } from '../lib/analytics/config';
+import { buildPageMeta } from '../lib/seo/meta';
+import { SITE_NAME } from '../lib/seo/site';
+import { liveCategories, liveTools } from '../lib/routes';
+
+interface Props {
+	title?: string;
+	description?: string;
+	noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const meta = buildPageMeta({
+	title,
+	description,
+	pathname: path,
+	noindex,
+});
+
+const allTools = liveTools();
+const popularSlugs = new Set([
+	'work-hours',
+	'merge-pdf',
+	'image-compressor',
+	'freelancer-rate',
+	'split-pdf',
+]);
+const popularTools = allTools.filter((tool) => popularSlugs.has(tool.slug));
+const otherTools = allTools.filter((tool) => !popularSlugs.has(tool.slug));
+
+const cats = liveCategories();
+const byId = Object.fromEntries(cats.map((c) => [c.id, c]));
+const navMenus = [
+	{
+		id: 'photos',
+		label: 'Photos',
+		tools: byId['photo-signature']?.tools ?? [],
+		tint: byId['photo-signature']?.tint ?? '#0a7a6c',
+	},
+	{
+		id: 'pdfs',
+		label: 'PDFs',
+		tools: byId['files-media']?.tools ?? [],
+		tint: byId['files-media']?.tint ?? '#0a7a6c',
+	},
+	{
+		id: 'calc',
+		label: 'Calculators',
+		tools: [...(byId['work-hours']?.tools ?? []), ...(byId['business-finance']?.tools ?? [])],
+		tint: byId['business-finance']?.tint ?? byId['work-hours']?.tint ?? '#0a7a6c',
+	},
+].filter((menu) => menu.tools.length > 0);
+
+const primaryLinks = [
+	{ href: '/', label: 'Home' },
+	{ href: '/faq', label: 'FAQ' },
+] as const;
+
+const googleSiteVerification = getGoogleSiteVerification();
+
+function isActive(href: string) {
+	if (href === '/') return path === '/';
+	return path === href || path.startsWith(`${href}/`);
+}
+
+function menuHasActive(tools: { path: string }[]) {
+	return tools.some((tool) => isActive(tool.path));
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="preload" href="/brand/tommytools-mark.svg" as="image" type="image/svg+xml" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={meta.description} />
+		<meta name="robots" content={meta.robots} />
+		<link rel="canonical" href={meta.canonicalUrl} />
+		<meta property="og:type" content={meta.og.type} />
+		<meta property="og:site_name" content={meta.og.siteName} />
+		<meta property="og:title" content={meta.og.title} />
+		<meta property="og:description" content={meta.og.description} />
+		<meta property="og:url" content={meta.og.url} />
+		<meta name="twitter:card" content={meta.twitter.card} />
+		<meta name="twitter:title" content={meta.twitter.title} />
+		<meta name="twitter:description" content={meta.twitter.description} />
+		<meta name="theme-color" content="#0a7a6c" />
+		{
+			googleSiteVerification ? (
+				<meta name="google-site-verification" content={googleSiteVerification} />
+			) : null
+		}
+		<title>{meta.title}</title>
+		<Analytics />
+		<slot name="head" />
+	</head>
+	<body class="site">
+		<a class="skip-link" href="#main">Skip to content</a>
+		<header class="site-header">
+			<div class="site-header__inner">
+				<a class="site-brand" href="/" aria-label={`${SITE_NAME} home`}>
+					<img
+						class="site-brand__mark"
+						src="/brand/tommytools-mark.svg"
+						width="34"
+						height="34"
+						alt=""
+						decoding="async"
+					/>
+					<span class="site-brand__name">{SITE_NAME}</span>
+				</a>
+
+				<nav class="site-nav" aria-label="Primary">
+					{
+						primaryLinks.map((item) => (
+							<a
+								class:list={['site-nav__link', { 'is-active': isActive(item.href) }]}
+								href={item.href}
+								aria-current={isActive(item.href) ? 'page' : undefined}
+							>
+								{item.label}
+							</a>
+						))
+					}
+
+					{
+						navMenus.map((menu) => (
+							<details
+								class:list={['nav-drop', { 'is-active': menuHasActive(menu.tools) }]}
+								data-nav-menu
+							>
+								<summary class="nav-drop__trigger">
+									{menu.label}
+									<span class="nav-drop__chev" aria-hidden="true" />
+								</summary>
+								<div class="nav-drop__panel" role="region" aria-label={`${menu.label} tools`}>
+									<ul class="mega__list">
+										{menu.tools.map((tool) => (
+											<li>
+												<a
+													href={tool.path}
+													aria-current={isActive(tool.path) ? 'page' : undefined}
+												>
+													<ToolIcon slug={tool.slug} tint={menu.tint} size="sm" />
+													<span>{tool.name}</span>
+												</a>
+											</li>
+										))}
+									</ul>
+								</div>
+							</details>
+						))
+					}
+
+					<details class="mega" data-mega data-nav-menu>
+						<summary class="mega__trigger">
+							All tools
+							<span class="mega__chev" aria-hidden="true"></span>
+						</summary>
+						<div class="mega__panel" role="region" aria-label="Tools menu">
+							<div class="mega__section">
+								<p class="mega__label">Popular</p>
+								<ul class="mega__list">
+									{
+										popularTools.map((tool) => (
+											<li>
+												<a
+													href={tool.path}
+													aria-current={isActive(tool.path) ? 'page' : undefined}
+												>
+													<ToolIcon slug={tool.slug} tint={tool.tint} size="sm" />
+													<span>{tool.name}</span>
+												</a>
+											</li>
+										))
+									}
+								</ul>
+							</div>
+							{
+								otherTools.length > 0 && (
+									<div class="mega__section">
+										<p class="mega__label">All</p>
+										<ul class="mega__list mega__list--dense">
+											{otherTools.map((tool) => (
+												<li>
+													<a
+														href={tool.path}
+														aria-current={isActive(tool.path) ? 'page' : undefined}
+													>
+														<ToolIcon slug={tool.slug} tint={tool.tint} size="sm" />
+														<span>{tool.name}</span>
+													</a>
+												</li>
+											))}
+										</ul>
+									</div>
+								)
+							}
+						</div>
+					</details>
+				</nav>
+			</div>
+		</header>
+
+		<main id="main" class="site-main">
+			<slot />
+		</main>
+
+		<footer class="site-footer">
+			<div class="site-footer__inner">
+				<div class="site-footer__top">
+					<div class="site-footer__brand-block">
+						<a class="site-footer__brand" href="/">
+							<img src="/brand/tommytools-mark.svg" width="28" height="28" alt="" />
+							{SITE_NAME}
+						</a>
+						<p class="site-footer__tag">Browser utilities. No accounts.</p>
+					</div>
+					<nav class="site-footer__links" aria-label="Footer">
+						<a href="/">Home</a>
+						<a href="/faq">FAQ</a>
+						<a href="/about">About</a>
+						<a href="/privacy">Privacy</a>
+						<a href="/terms">Terms</a>
+						<a href="/contact">Contact</a>
+					</nav>
+				</div>
+				<p class="site-footer__copy">© {new Date().getFullYear()} {SITE_NAME}</p>
+			</div>
+		</footer>
+
+		<script is:inline>
+			(function () {
+				const menus = Array.prototype.slice.call(
+					document.querySelectorAll('[data-nav-menu]'),
+				);
+
+				function closeAll(except) {
+					menus.forEach(function (el) {
+						if (el !== except && el instanceof HTMLDetailsElement) el.open = false;
+					});
+				}
+
+				function openAllTools() {
+					const mega = document.querySelector('[data-mega]');
+					if (!(mega instanceof HTMLDetailsElement)) return;
+					closeAll(mega);
+					mega.open = true;
+					const summary = mega.querySelector('summary');
+					if (summary instanceof HTMLElement) summary.focus();
+				}
+
+				menus.forEach(function (menu) {
+					if (!(menu instanceof HTMLDetailsElement)) return;
+					menu.addEventListener('toggle', function () {
+						if (menu.open) closeAll(menu);
+					});
+					menu.querySelectorAll('a').forEach(function (link) {
+						link.addEventListener('click', function () {
+							menu.open = false;
+						});
+					});
+				});
+
+				document.querySelectorAll('[data-mega-open]').forEach(function (btn) {
+					btn.addEventListener('click', function () {
+						openAllTools();
+						window.scrollTo({ top: 0, behavior: 'smooth' });
+					});
+				});
+
+				document.addEventListener('click', function (event) {
+					const target = event.target;
+					if (!(target instanceof Node)) return;
+					const inside = menus.some(function (menu) {
+						return menu.contains(target);
+					});
+					if (!inside) closeAll(null);
+				});
+
+				document.addEventListener('keydown', function (event) {
+					if (event.key === 'Escape') closeAll(null);
+				});
+
+				const params = new URLSearchParams(window.location.search);
+				const toolsParam = params.get('tools');
+				if (toolsParam === '1' || toolsParam === '') {
+					openAllTools();
+					params.delete('tools');
+					const next =
+						window.location.pathname +
+						(params.toString() ? '?' + params.toString() : '') +
+						window.location.hash;
+					history.replaceState({}, '', next);
+				}
+			})();
+		</script>
+	</body>
+</html>
+
+<style>
+	.site {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+	}
+
+	.skip-link {
+		position: absolute;
+		left: var(--space-4);
+		top: var(--space-4);
+		z-index: 200;
+		padding: var(--space-2) var(--space-3);
+		background: var(--color-fg);
+		color: var(--color-bg-elevated);
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: var(--radius-sm);
+		transform: translateY(-220%);
+		transition: transform var(--duration-fast) var(--ease-out);
+	}
+
+	.skip-link:focus-visible {
+		transform: translateY(0);
+	}
+
+	.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 60;
+		border-bottom: 1px solid var(--color-border);
+		background: #fff;
+		box-shadow: 0 1px 0 color-mix(in srgb, var(--color-fg) 4%, transparent);
+	}
+
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		max-width: var(--shell-width);
+		margin-inline: auto;
+		padding: 0.7rem 1.25rem;
+		min-height: 3.75rem;
+	}
+
+	.site-brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		flex-shrink: 0;
+		color: var(--color-fg);
+		text-decoration: none;
+	}
+
+	.site-brand__mark {
+		display: block;
+		width: 34px;
+		height: 34px;
+		border-radius: 9px;
+	}
+
+	.site-brand__name {
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+		line-height: 1;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.site-brand:hover .site-brand__name {
+		color: var(--color-accent-deep);
+	}
+
+	.site-nav {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.35rem 1rem;
+		min-width: 0;
+	}
+
+	.site-nav__link {
+		padding: 0.4rem 0.55rem;
+		border-radius: var(--radius-pill);
+		color: var(--color-muted);
+		font-size: 0.92rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.site-nav__link:hover {
+		color: var(--color-fg);
+	}
+
+	.site-nav__link.is-active,
+	.site-nav__link[aria-current='page'] {
+		color: var(--color-accent-deep);
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+	}
+
+	.nav-drop {
+		position: relative;
+	}
+
+	.nav-drop__trigger {
+		list-style: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.4rem 0.55rem;
+		border-radius: var(--radius-pill);
+		color: var(--color-muted);
+		font: inherit;
+		font-size: 0.92rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.nav-drop__trigger::-webkit-details-marker,
+	.nav-drop__trigger::marker {
+		display: none;
+		content: '';
+	}
+
+	.nav-drop__trigger:hover,
+	.nav-drop[open] .nav-drop__trigger,
+	.nav-drop.is-active .nav-drop__trigger {
+		color: var(--color-accent-deep);
+	}
+
+	.nav-drop.is-active .nav-drop__trigger {
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+	}
+
+	.nav-drop__chev {
+		width: 0.35rem;
+		height: 0.35rem;
+		border-right: 1.5px solid currentColor;
+		border-bottom: 1.5px solid currentColor;
+		transform: rotate(45deg) translateY(-1px);
+		opacity: 0.75;
+	}
+
+	.nav-drop[open] .nav-drop__chev {
+		transform: rotate(225deg) translateY(-1px);
+	}
+
+	.nav-drop__panel {
+		position: absolute;
+		top: calc(100% + 0.65rem);
+		left: 0;
+		z-index: 80;
+		min-width: 14.5rem;
+		width: max-content;
+		max-width: min(20rem, calc(100vw - 1.5rem));
+		padding: 0.65rem 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-menu);
+		animation: mega-in var(--duration-med) var(--ease-out);
+	}
+
+	.mega {
+		position: relative;
+	}
+
+	.mega__trigger {
+		list-style: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.55rem 1.1rem;
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: var(--color-accent);
+		color: #fff;
+		font: inherit;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background-color var(--duration-fast) var(--ease-out);
+	}
+
+	.mega__trigger::-webkit-details-marker,
+	.mega__trigger::marker {
+		display: none;
+		content: '';
+	}
+
+	.mega__trigger:hover,
+	.mega[open] .mega__trigger {
+		background: var(--color-accent-deep);
+	}
+
+	.mega__chev {
+		width: 0.4rem;
+		height: 0.4rem;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(45deg) translateY(-1px);
+		transition: transform var(--duration-fast) var(--ease-out);
+	}
+
+	.mega[open] .mega__chev {
+		transform: rotate(225deg) translateY(-1px);
+	}
+
+	.mega__panel {
+		position: absolute;
+		top: calc(100% + 0.75rem);
+		right: 0;
+		z-index: 80;
+		width: min(22rem, calc(100vw - 1.5rem));
+		max-height: min(70vh, 28rem);
+		overflow: auto;
+		padding: 1rem 1.1rem 1.15rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-menu);
+		animation: mega-in var(--duration-med) var(--ease-out);
+	}
+
+	.mega__section + .mega__section {
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.mega__label {
+		margin: 0 0 0.55rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.mega__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.15rem;
+	}
+
+	.mega__list--dense {
+		gap: 0.1rem;
+	}
+
+	.mega__list a {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 0.45rem 0.25rem;
+		border-radius: var(--radius-sm);
+		color: var(--color-fg);
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.mega__list a:hover,
+	.mega__list a[aria-current='page'] {
+		color: var(--color-accent-deep);
+		background: none;
+	}
+
+	@keyframes mega-in {
+		from {
+			opacity: 0;
+			transform: translateY(0.25rem);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.site-main {
+		flex: 1;
+		width: 100%;
+	}
+
+	.site-footer {
+		margin-top: auto;
+		background: var(--color-footer-bg);
+		color: var(--color-footer-fg);
+	}
+
+	.site-footer__inner {
+		max-width: var(--shell-width);
+		margin-inline: auto;
+		padding: var(--space-6) var(--space-5) var(--space-5);
+	}
+
+	.site-footer__top {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-5) var(--space-6);
+		padding-bottom: var(--space-5);
+		border-bottom: 1px solid color-mix(in srgb, #fff 12%, transparent);
+	}
+
+	.site-footer__brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin: 0 0 0.35rem;
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.site-footer__brand img {
+		border-radius: 7px;
+	}
+
+	.site-footer__tag {
+		margin: 0;
+		color: var(--color-footer-muted);
+		font-size: 0.92rem;
+	}
+
+	.site-footer__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 1.25rem;
+	}
+
+	.site-footer__links a {
+		color: var(--color-footer-muted);
+		font-size: 0.95rem;
+		font-weight: 500;
+		text-decoration: none;
+		transition: color var(--duration-fast) var(--ease-out);
+	}
+
+	.site-footer__links a:hover {
+		color: #fff;
+	}
+
+	.site-footer__copy {
+		margin: var(--space-4) 0 0;
+		color: var(--color-footer-muted);
+		font-size: 0.85rem;
+	}
+
+	@media (max-width: 720px) {
+		.site-header__inner {
+			padding: 0.65rem 1rem;
+		}
+
+		.site-nav {
+			gap: 0.25rem 0.65rem;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+		}
+
+		.site-nav::-webkit-scrollbar {
+			display: none;
+		}
+
+		.site-nav__link,
+		.nav-drop__trigger {
+			font-size: 0.86rem;
+			padding: 0.35rem 0.4rem;
+		}
+
+		.mega__trigger {
+			padding: 0.45rem 0.9rem;
+			font-size: 0.85rem;
+		}
+
+		.nav-drop__panel,
+		.mega__panel {
+			position: fixed;
+			top: 3.5rem;
+			left: 0.75rem;
+			right: 0.75rem;
+			width: auto;
+			max-width: none;
+			max-height: min(65vh, 26rem);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-drop__panel,
+		.mega__panel {
+			animation: none;
+		}
+	}
+</style>

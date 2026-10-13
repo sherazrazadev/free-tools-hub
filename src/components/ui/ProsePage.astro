@@ -1,0 +1,168 @@
+---
+interface Props {
+	title: string;
+	/** Optional short line under the H1 in the teal band */
+	lede?: string;
+	/** Wider body card (e.g. FAQ lists) */
+	wide?: boolean;
+}
+
+const { title, lede, wide = false } = Astro.props;
+---
+
+<article class="prose-page">
+	<header class="prose-page__header">
+		<div class="prose-page__header-inner">
+			<p class="prose-page__eyebrow">TommyTools</p>
+			<h1>{title}</h1>
+			{lede ? <p class="prose-page__lede">{lede}</p> : null}
+		</div>
+	</header>
+	<div class:list={['prose-page__body', { 'prose-page__body--wide': wide }]}>
+		<slot />
+	</div>
+</article>
+
+<style>
+	.prose-page {
+		margin: 0 0 var(--space-10);
+	}
+
+	.prose-page__header {
+		position: relative;
+		overflow: hidden;
+		border-bottom: 1px solid color-mix(in srgb, #fff 18%, transparent);
+		background: linear-gradient(165deg, #065f55 0%, #0a7a6c 42%, #0b4f6c 100%);
+		color: #fff;
+	}
+
+	.prose-page__header::before {
+		content: '';
+		position: absolute;
+		inset: -20% 15% auto;
+		height: 70%;
+		background: radial-gradient(closest-side, #1a9d8c 0%, transparent 72%);
+		opacity: 0.8;
+		pointer-events: none;
+	}
+
+	.prose-page__header-inner {
+		position: relative;
+		width: min(100% - 2.5rem, 42rem);
+		margin: 0 auto;
+		padding: clamp(2.5rem, 6vw, 3.5rem) 0;
+		text-align: center;
+		animation: prose-rise 0.5s var(--ease-out) both;
+	}
+
+	.prose-page__eyebrow {
+		margin: 0 0 0.65rem;
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, #fff 78%, transparent);
+	}
+
+	.prose-page h1 {
+		margin: 0;
+		font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+		font-weight: 800;
+		letter-spacing: -0.04em;
+		color: #fff;
+	}
+
+	.prose-page__lede {
+		margin: 0.75rem auto 0;
+		max-width: 34rem;
+		color: color-mix(in srgb, #fff 84%, transparent);
+		font-size: 1.05rem;
+		line-height: 1.55;
+	}
+
+	.prose-page__body {
+		width: min(100% - 2rem, 48rem);
+		margin: calc(var(--space-6) * -1) auto 0;
+		position: relative;
+		z-index: 1;
+		padding: var(--space-6) clamp(1.15rem, 3vw, 1.75rem);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.prose-page__body--wide {
+		width: min(100% - 2rem, var(--shell-width));
+	}
+
+	.prose-page__body :global(h2) {
+		margin: var(--space-6) 0 var(--space-3);
+		font-size: 1.2rem;
+		letter-spacing: -0.02em;
+	}
+
+	.prose-page__body :global(h2:first-child) {
+		margin-top: 0;
+	}
+
+	.prose-page__body :global(p),
+	.prose-page__body :global(ul) {
+		color: var(--color-muted);
+		line-height: 1.65;
+	}
+
+	.prose-page__body :global(strong) {
+		color: var(--color-fg);
+		font-weight: 600;
+	}
+
+	.prose-page__body :global(ul) {
+		padding-left: 1.15rem;
+		margin: 0 0 1em;
+	}
+
+	.prose-page__body :global(li) {
+		margin-bottom: var(--space-2);
+		padding-left: 0.15rem;
+	}
+
+	.prose-page__body :global(a) {
+		color: var(--color-accent-deep);
+		font-weight: 600;
+	}
+
+	.prose-page__body :global(a:hover) {
+		color: var(--color-accent);
+	}
+
+	.prose-page__body :global(code) {
+		padding: 0.1em 0.35em;
+		border-radius: 6px;
+		background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg));
+		font-size: 0.92em;
+	}
+
+	.prose-page__body :global(time) {
+		color: var(--color-muted);
+		font-size: 0.95rem;
+	}
+
+	@keyframes prose-rise {
+		from {
+			opacity: 0;
+			transform: translateY(0.5rem);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.prose-page__header-inner {
+			animation: none;
+		}
+	}
+</style>

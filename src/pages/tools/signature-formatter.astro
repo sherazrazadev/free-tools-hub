@@ -1,0 +1,68 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import SignatureFormatterTool from '../../components/tools/SignatureFormatterTool';
+---
+
+<ToolLayout
+	title="Signature Formatter - Crop and resize for forms | TommyTools"
+	description="Format a signature image: crop, set dimensions, choose PNG/JPEG/WebP, optional max KB, preview on a plain background. Runs in your browser. No official acceptance claims."
+	heading="Signature formatter"
+	purpose="Crop and resize a signature for online forms, convert format, optionally target a max file size, and preview on a plain background. This does not guarantee acceptance by any institution."
+	category="Photo & signature"
+	categoryHref="/?tools=photo-signature"
+>
+	<div slot="tool">
+		<SignatureFormatterTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose a signature image from your device.</li>
+			<li>
+				Optional: pick a <strong>verified preset</strong> if one is listed (sourced + dated). Otherwise
+				enter the form’s width, height, format, and max KB yourself.
+			</li>
+			<li>Drag the crop box or its corner handles (touch-friendly) to frame the ink.</li>
+			<li>Choose format and preview background, then <strong>Update preview</strong> or download.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: crop tightly around ink, export <strong>300×80 PNG</strong> on white. If a form asks for
+			under 40 KB, set max KB - the tool reports honestly if the limit cannot be met.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			Crop pixels → draw onto a plain-background canvas at the requested size → encode as PNG, JPEG, or
+			WebP. Optional luminance threshold maps light/dark for contrast. Max KB uses the same iterative
+			quality/scale approach as the compressor (PNG: scale steps only).
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Not an official stamp.</strong> Matching dimensions or file size does not mean a form
+				will accept the signature.
+			</li>
+			<li>
+				Verified presets only appear when checked against a trustworthy source with a verification date.
+				None are shipped until then - use manual specs from the form.
+			</li>
+			<li>Threshold is a simple contrast aid, not automatic background erasure.</li>
+			<li>Very large images may be slow on phones; keep files under the stated size limit when possible.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li><a href="/tools/image-resizer">Image resizer</a></li>
+			<li><a href="/tools/image-compressor">Image compressor</a></li>
+		</ul>
+	</div>
+
+</ToolLayout>

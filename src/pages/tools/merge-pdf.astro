@@ -1,0 +1,96 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import MergePdfTool from '../../components/tools/MergePdfTool';
+import {
+	MAX_PDF_BYTES,
+	MAX_PDF_FILES,
+	MAX_TOTAL_PDF_BYTES,
+	bytesToMbFloor,
+} from '../../lib/tools/pdf/limits';
+
+const maxMb = bytesToMbFloor(MAX_PDF_BYTES);
+const maxTotalMb = bytesToMbFloor(MAX_TOTAL_PDF_BYTES);
+---
+
+<ToolLayout
+	title="Merge PDF - Combine PDFs in your browser | TommyTools"
+	description="Free PDF merger: add multiple PDFs, reorder, remove, merge, and download. Processed locally with pdf-lib in your browser - files are not uploaded."
+	heading="PDF merger"
+	purpose="Combine several PDF files into one document in your browser. Reorder or remove files before merging, then download the result."
+	category="Files & media"
+	categoryHref="/?tools=files-media"
+>
+	<div slot="tool">
+		<MergePdfTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose one or more PDF files from your device (you can add more in later picks).</li>
+			<li>Use <strong>Up</strong> / <strong>Down</strong> to set merge order, or <strong>Remove</strong> a file.</li>
+			<li>Select <strong>Merge and download</strong> to build <code>merged.pdf</code> and save it.</li>
+			<li>Use <strong>Clear</strong> to discard the list and start over.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: add <strong>cover.pdf</strong> (1 page) then <strong>report.pdf</strong> (3 pages).
+			Merge order top-to-bottom becomes a single 4-page PDF: cover first, then the report pages.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			For each file in list order, every page is copied into a new PDF document (via{' '}
+			<code>pdf-lib</code>), then the combined bytes are saved for download. Page order follows the
+			list; page numbers in readers start at 1 for the first page of the result.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<h3>Size and count limits</h3>
+		<ul>
+			<li>
+				Soft caps (enforced in the tool): <strong>{maxMb} MB</strong> per PDF,{' '}
+				<strong>{MAX_PDF_FILES}</strong> files, <strong>{maxTotalMb} MB</strong> combined.
+			</li>
+			<li>
+				These are browser-safety limits, not a guarantee that every file under the cap will succeed.
+			</li>
+		</ul>
+
+		<h3>Mobile and memory</h3>
+		<ul>
+			<li>
+				Merge runs entirely in your browser tab. Phones and tablets with little free RAM can freeze,
+				reload, or fail even when files are under the soft limits - especially with scanned or
+				image-heavy PDFs.
+			</li>
+			<li>
+				If a merge stalls on mobile, try a computer, close other tabs/apps, use fewer or smaller
+				PDFs, or merge in smaller batches.
+			</li>
+		</ul>
+
+		<h3>Common mistakes</h3>
+		<ul>
+			<li>Password-protected / encrypted PDFs are not supported - unlock them first.</li>
+			<li>Damaged or non-PDF files show an error and are not added.</li>
+			<li>Forms, bookmarks, and some advanced PDF features may not be preserved exactly.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/split-pdf">PDF splitter</a>
+			</li>
+			<li>
+				<a href="/tools/image-compressor">Image compressor</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

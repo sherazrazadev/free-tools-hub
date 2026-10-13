@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import AiSystemRiskChecklistTool from '../../components/tools/AiSystemRiskChecklistTool';
+---
+
+<ToolLayout
+	title="AI System Risk Checklist - Defensive self-assessment | TommyTools"
+	description="Free AI system risk checklist: intended use, ownership, data, oversight, access, logging, evaluation, incidents, third parties, and limitations. Transparent scoring and downloadable report. Informal self-assessment - not an audit or certification."
+	heading="AI system risk checklist"
+	purpose="Work through a structured defensive self-check for an AI system you own or operate. Mark Yes / No / N/A, see gaps and follow-ups, and download a summary report. Informal self-assessment only - not an audit or certification."
+	category="AI governance"
+	categoryHref="/?tools=ai-governance"
+>
+	<div slot="tool">
+		<AiSystemRiskChecklistTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Read each section’s <strong>purpose</strong>, then answer the items with Yes, No, or N/A.</li>
+			<li>Review completion %, gaps (No answers), and suggested follow-ups.</li>
+			<li>Optional: <strong>Save draft locally</strong> in this browser’s localStorage.</li>
+			<li>Use <strong>Download report</strong> for a text summary you keep on your device.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: you answer most items Yes, mark “Is there a named product/system owner?” as{' '}
+			<strong>No</strong>. The summary shows a gap for system ownership and suggests assigning a
+			primary owner. The downloadable report lists that gap under “GAPS” with the follow-up action -
+			it does <em>not</em> claim the system is compliant or certified.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			<strong>Transparent scoring (not a risk rating):</strong>
+		</p>
+		<ul>
+			<li>
+				<code>Completion % = answered items / total items</code> (Yes, No, and N/A count as answered)
+			</li>
+			<li>
+				<code>Addressed % = Yes / (Yes + No)</code> among answered items; N/A excluded; null if no
+				Yes/No yet
+			</li>
+			<li>Gaps = items answered <strong>No</strong>; follow-ups come from those items’ guidance</li>
+		</ul>
+		<p>
+			A high completion % only means you filled in the form. It does not prove safety or compliance.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Not an audit, certification, or security guarantee.</strong> Informal self-assessment
+				only.
+			</li>
+			<li>Defensive review prompts - no exploit steps, bypass guidance, or attack tooling.</li>
+			<li>No LLM calls; answers are scored with fixed rules in your browser.</li>
+			<li>
+				Persistence: optional localStorage draft on this device, or download-only report. Nothing is
+				uploaded by this tool.
+			</li>
+			<li>
+				Framework-mapped checklists (e.g. NIST AI RMF, OWASP LLM) are separate tools and are not
+				claimed here.
+			</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/nist-ai-rmf-checklist">NIST AI RMF checklist</a>
+			</li>
+			<li>
+				<a href="/tools/owasp-llm-top10-checklist">OWASP LLM Top 10 checklist</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

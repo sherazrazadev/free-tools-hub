@@ -1,0 +1,16 @@
+# Cloudflare Pages headers for Tools (tools.tommyfx.pk)
+# Copied to dist/ on `npm run build`.
+#
+# CSP notes (unsafe-inline necessity):
+# - style-src 'unsafe-inline': Astro scoped <style> blocks + React island inline styles
+#   (e.g. TemplateDemoTool). Same-origin /_astro/*.css and Google Fonts CSS also allowed.
+# - script-src 'unsafe-inline': Astro island hydration bootstraps inline <script> in HTML.
+#   Module/chunk scripts load from same-origin /_astro/*.js.
+# Tighten later with nonces/hashes if the build pipeline supports them on Pages.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests

@@ -1,0 +1,66 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import ImageResizerTool from '../../components/tools/ImageResizerTool';
+---
+
+<ToolLayout
+	title="Image Resizer - Resize photos in your browser | TommyTools"
+	description="Free image resizer: set width and height, lock aspect ratio, preview, and download. JPEG, PNG, WebP, GIF - processed locally in your browser, not uploaded."
+	heading="Image resizer"
+	purpose="Resize a photo or graphic to exact pixel dimensions in your browser. Lock aspect ratio when you need proportional scaling, preview the result, then download."
+	category="Photo & signature"
+	categoryHref="/?tools=photo-signature"
+>
+	<div slot="tool">
+		<ImageResizerTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose a JPEG, PNG, WebP, or GIF from your device.</li>
+			<li>Set the target <strong>width</strong> and <strong>height</strong> in pixels.</li>
+			<li>Leave <strong>Lock aspect ratio</strong> on to keep proportions, or turn it off for free sizing.</li>
+			<li>Use <strong>Update preview</strong> to check the result, then <strong>Download resized image</strong>.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: a 1600×1200 photo with aspect lock and width 800 becomes <strong>800×600</strong>.
+			The canvas output size matches those pixels; the download uses the same render as the preview.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			Unlocked: output size = (requested width, requested height).<br />
+			Locked (drive width): height = round(width × sourceHeight / sourceWidth).<br />
+			Locked (drive height): width = round(height × sourceWidth / sourceHeight).
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>Processing happens in your browser via HTML Canvas - very large images may fail or be slow on low-memory devices.</li>
+			<li>Maximum file size for this tool is 20 MB; decode can still fail for corrupted or exotic encodings.</li>
+			<li>GIF animation is not preserved (browsers typically decode the first frame).</li>
+			<li>
+				This is a dimension/format helper, not an official “application compliant” stamp. Always check the
+				form’s own photo rules.
+			</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/image-compressor">Image compressor</a>
+			</li>
+			<li>
+				<a href="/tools/signature-formatter">Signature formatter</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

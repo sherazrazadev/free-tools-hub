@@ -1,0 +1,70 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import ImageCompressorTool from '../../components/tools/ImageCompressorTool';
+---
+
+<ToolLayout
+	title="Image Compressor - Reduce photo file size in your browser | TommyTools"
+	description="Free image compressor: JPEG or WebP quality, optional max KB with iterative best-effort attempts. Reports when a size limit cannot be met. Runs locally - no upload."
+	heading="Image compressor"
+	purpose="Reduce an image’s file size with quality control and an optional max KB target. Compression is best-effort: if the limit cannot be met, the page says so clearly."
+	category="Photo & signature"
+	categoryHref="/?tools=photo-signature"
+>
+	<div slot="tool">
+		<ImageCompressorTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose a JPEG, PNG, WebP, or GIF from your device.</li>
+			<li>Pick <strong>JPEG</strong> or <strong>WebP</strong> and a starting quality.</li>
+			<li>
+				Optional: enter a <strong>max size in KB</strong>. The tool lowers quality, then scale,
+				until it meets the limit or exhausts attempts.
+			</li>
+			<li>Use <strong>Compress &amp; preview</strong>, then download if the result works for you.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: a 2 MB photo with max <strong>100 KB</strong> and starting quality 85%. The tool
+			tries lower quality first, then smaller dimensions if needed. If it still cannot get under
+			100 KB, it labels the limit <strong>not met</strong> and offers the smallest attempt.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			Without max KB: one encode at starting quality and full pixel size.<br />
+			With max KB: try quality from start → 10% (step 5%), then scale 100% → 50%, keeping the
+			smallest blob; stop early when size ≤ target.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Exact KB is not guaranteed.</strong> Some images cannot reach a very small limit
+				without extreme downscaling or unacceptable quality.
+			</li>
+			<li>PNG input is re-encoded as JPEG or WebP (lossy). Transparency may become a solid fill depending on the browser encoder.</li>
+			<li>GIF animation is not preserved.</li>
+			<li>Very large images may fail or be slow on low-memory devices (20 MB client soft limit).</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/image-resizer">Image resizer</a>
+			</li>
+			<li>
+				<a href="/tools/signature-formatter">Signature formatter</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

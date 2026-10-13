@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProsePage from '../components/ui/ProsePage.astro';
+---
+
+<BaseLayout
+	title="Contact TommyTools | Feedback"
+	description="Contact TommyTools for product feedback and bug reports. No account required. No contact form is wired yet."
+>
+	<ProsePage title="Contact">
+		<p>
+			Feedback helps decide what to fix or build next - especially bugs, unclear results, and
+			missing edge cases on a specific tool.
+		</p>
+
+		<h2>Feedback method</h2>
+		<p>
+			There is <strong>no contact form or published inbox wired into this site yet</strong>. When
+			a contact email (or other channel) is available, it will be listed on this page.
+		</p>
+		<p>
+			Until then, use this page as the contact entry point from the site footer and navigation.
+			Do not send passwords, API keys, or personal document scans through informal channels.
+		</p>
+
+		<h2>What is most useful</h2>
+		<ul>
+			<li>Which tool or page you used</li>
+			<li>What you expected vs what happened</li>
+			<li>Browser and device (for example Chrome on Android)</li>
+			<li>Whether any file left your device (if you checked the network panel)</li>
+		</ul>
+
+		<p class="note">
+			For privacy details that match the current codebase, see <a href="/privacy">Privacy</a>.
+		</p>
+	</ProsePage>
+</BaseLayout>

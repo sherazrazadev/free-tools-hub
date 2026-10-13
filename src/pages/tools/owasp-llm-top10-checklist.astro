@@ -1,0 +1,69 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import OwaspLlmTop10ChecklistTool from '../../components/tools/OwaspLlmTop10ChecklistTool';
+---
+
+<ToolLayout
+	title="OWASP LLM Top 10 Checklist - Defensive control review | TommyTools"
+	description="Defensive self-check aligned to OWASP Top 10 for LLM Applications 2025 (LLM01–LLM10). Review controls - not exploit steps. Downloadable report. Not a security certification."
+	heading="OWASP LLM Top 10 checklist"
+	purpose="Review whether defensive controls exist for each OWASP Top 10 for LLM Applications 2025 risk category. This is a control-review self-check - not exploit guidance and not a claim that your app is secure."
+	category="AI governance"
+	categoryHref="/?tools=ai-governance"
+>
+	<div slot="tool">
+		<OwaspLlmTop10ChecklistTool client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>For each LLM0x:2025 category, answer whether the listed defensive controls are in place.</li>
+			<li>Use N/A when a category does not apply to your architecture.</li>
+			<li>Optional: save a draft locally, then download a report that preserves your answers.</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			Example: for <strong>LLM06:2025 Excessive Agency</strong> you mark “Are tool permissions limited
+			to the minimum needed?” as <strong>No</strong>. The report lists that gap and suggests applying
+			least privilege - it does not provide steps to abuse excess permissions.
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			<strong>Source:</strong> OWASP Top 10 for Large Language Model Applications <strong>2025</strong>
+			(LLM01–LLM10). Verified 2026-10-13. Hub:{' '}
+			<a href="https://genai.owasp.org/llm-top-10/" rel="noopener noreferrer">genai.owasp.org/llm-top-10</a>.
+		</p>
+		<p>
+			<strong>Scoring:</strong> Completion % = answered / total. Addressed % = Yes / (Yes + No). Gaps =
+			No answers. Checklist metrics only - not a vulnerability scan result.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>
+				<strong>Defensive review only</strong> - no exploit steps, bypass recipes, or attack tooling.
+			</li>
+			<li>Does not prove an application is secure or that all issues were found.</li>
+			<li>No LLM calls; answers stay local unless you download a report.</li>
+			<li>Source notes: <code>docs/SOURCES-AI-GOV.md</code> in the project repo.</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/nist-ai-rmf-checklist">NIST AI RMF checklist</a>
+			</li>
+			<li>
+				<a href="/tools/ai-system-risk-checklist">AI system risk checklist</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

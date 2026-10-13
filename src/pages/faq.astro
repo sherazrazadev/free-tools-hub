@@ -1,0 +1,107 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProsePage from '../components/ui/ProsePage.astro';
+import { toolFaqGroups } from '../lib/faq';
+---
+
+<BaseLayout
+	title="FAQ — Answers for every tool | TommyTools"
+	description="Frequently asked questions for all TommyTools utilities: work hours, image tools, PDFs, business calculators, and AI governance checklists."
+>
+	<ProsePage
+		title="FAQ"
+		wide
+		lede="Answers from every live tool in one place. Open a tool for the working utility; use this page for a quick scan across the site."
+	>
+		{
+			toolFaqGroups.map((group) => (
+				<section class="faq-group" aria-labelledby={`faq-${group.path.replace(/\//g, '-')}`}>
+					<div class="faq-group__head">
+						<h2 id={`faq-${group.path.replace(/\//g, '-')}`}>{group.name}</h2>
+						<a class="faq-group__link" href={group.path}>
+							Open tool <span aria-hidden="true">→</span>
+						</a>
+					</div>
+					{group.items.length > 0 ? (
+						<div class="faq-group__list">
+							{group.items.map((item) => (
+								<details class="faq-item">
+									<summary>{item.question}</summary>
+									<p>{item.answer}</p>
+								</details>
+							))}
+						</div>
+					) : (
+						<p class="faq-group__empty">No FAQ entries for this tool yet.</p>
+					)}
+				</section>
+			))
+		}
+	</ProsePage>
+</BaseLayout>
+
+<style>
+	.faq-group {
+		padding: var(--space-5) 0;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.faq-group:first-child {
+		border-top: none;
+		padding-top: 0;
+	}
+
+	.faq-group__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-bottom: var(--space-4);
+	}
+
+	.faq-group__head h2 {
+		margin: 0;
+		font-size: 1.2rem;
+	}
+
+	.faq-group__link {
+		font-weight: 700;
+		text-decoration: none;
+		white-space: nowrap;
+		font-size: 0.95rem;
+	}
+
+	.faq-group__list {
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.faq-item {
+		padding: var(--space-3) var(--space-4);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: color-mix(in srgb, var(--color-bg) 55%, var(--color-surface));
+		transition: border-color var(--duration-fast) var(--ease-out);
+	}
+
+	.faq-item:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 28%, var(--color-border));
+	}
+
+	.faq-item summary {
+		cursor: pointer;
+		font-weight: 700;
+		color: var(--color-fg);
+	}
+
+	.faq-item p {
+		margin: var(--space-3) 0 0;
+		color: var(--color-muted);
+	}
+
+	.faq-group__empty {
+		margin: 0;
+		color: var(--color-muted);
+	}
+</style>

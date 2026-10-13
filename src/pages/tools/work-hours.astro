@@ -1,0 +1,82 @@
+---
+import ToolLayout from '../../layouts/ToolLayout.astro';
+import WorkHoursCalculator from '../../components/tools/WorkHoursCalculator';
+---
+
+<ToolLayout
+	title="Work Hours Calculator - Day, week, breaks, overtime estimate | TommyTools"
+	description="Free work hours and weekly timesheet calculator: multiple shifts, unpaid breaks, overnight, CSV export, and optional overtime/pay estimates. Runs in your browser."
+	heading="Work hours calculator"
+	purpose="Build a day or week timesheet from shifts. Subtract unpaid break minutes, handle overnight ends, export CSV or print, and optionally split regular vs overtime hours with a gross pay estimate."
+	category="Work hours & shifts"
+	categoryHref="/?tools=work-hours"
+>
+	<div slot="tool">
+		<WorkHoursCalculator client:load />
+	</div>
+
+	<div slot="instructions">
+		<ol>
+			<li>Choose <strong>Day</strong> or <strong>Week</strong> mode.</li>
+			<li>Enter each shift’s start, end, and unpaid break minutes (0 if none).</li>
+			<li>Turn on <strong>Ends next day</strong> when a shift crosses midnight.</li>
+			<li>
+				Optional: open <strong>Overtime &amp; pay estimate</strong> to set a regular-hour
+				threshold, OT multiplier, and hourly rate.
+			</li>
+			<li>
+				Use <strong>Download CSV</strong> or <strong>Print</strong> for a summary that matches
+				the on-screen totals.
+			</li>
+		</ol>
+	</div>
+
+	<div slot="example">
+		<p>
+			<strong>Day:</strong> 09:00–17:30 with a 30-minute unpaid break → net
+			<strong> 8 hours</strong> (8.00 decimal).
+		</p>
+		<p>
+			<strong>Week fixture:</strong> Monday net 8h (with 30m break) plus Tuesday–Friday net 8h
+			each, weekend off → <strong>40.00</strong> decimal hours for the week.
+		</p>
+		<p>
+			<strong>Overtime example:</strong> 45 net hours, threshold 40, multiplier 1.5, rate 20 →
+			regular 40h / OT 5h; estimated gross pay 950.00 (estimate only).
+		</p>
+	</div>
+
+	<div slot="formula">
+		<p>
+			Elapsed = end − start (+ 24h if ends next day). Net = elapsed − unpaid break. Week total
+			sums each day’s net minutes. Overtime hours = max(0, net hours − threshold). Estimated OT
+			pay = OT hours × rate × multiplier. Break and OT settings are arithmetic / user-configured -
+			not legal classifications. All math runs in your browser.
+		</p>
+	</div>
+
+	<div slot="limitations">
+		<ul>
+			<li>Not payroll, tax, or jurisdiction-specific overtime advice.</li>
+			<li>Unpaid break is the minutes you enter; the tool does not decide legal deductibility.</li>
+			<li>Pay figures ignore taxes, benefits, and deductions.</li>
+			<li>
+				Week and day workflows share this page (no separate thin SEO clone for “weekly
+				timesheet”).
+			</li>
+		</ul>
+	</div>
+
+
+	<div slot="related">
+		<ul class="related-list">
+			<li>
+				<a href="/tools/freelancer-rate">Freelancer rate</a>
+			</li>
+			<li>
+				<a href="/tools/advertising-metrics">Advertising metrics</a>
+			</li>
+		</ul>
+	</div>
+
+</ToolLayout>

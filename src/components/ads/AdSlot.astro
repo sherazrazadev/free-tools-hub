@@ -1,0 +1,51 @@
+---
+/**
+ * Reserved ad zone - never overlays uploads, primary buttons, or results.
+ * Renders nothing when PUBLIC_ADS_ENABLED is unset/false (default).
+ * When enabled: empty layout shell only (no AdSense script until operator approval).
+ */
+import { isAdsEnabled } from '../../lib/ads/config';
+
+interface Props {
+	/** Stable zone id for future AdSense mapping (e.g. after-tool, home-below-tools). */
+	zone: string;
+	/** Visual size hint for reserved space. */
+	size?: 'banner' | 'rail';
+}
+
+const { zone, size = 'banner' } = Astro.props;
+const enabled = isAdsEnabled();
+---
+
+{
+	enabled ? (
+		<aside
+			class:list={['ad-slot', `ad-slot--${size}`]}
+			data-ad-zone={zone}
+			aria-label="Advertisement"
+		>
+			{/* Intentionally empty: wire AdSense unit here only after SOP §12 eligibility. */}
+		</aside>
+	) : null
+}
+
+<style>
+	.ad-slot {
+		margin: 0;
+		border: 1px dashed color-mix(in srgb, var(--color-fg) 12%, transparent);
+		border-radius: var(--radius-md);
+		background: color-mix(in srgb, var(--color-fg) 3%, var(--color-surface));
+		/* Reserve space to limit CLS when a unit is attached later. */
+		contain: layout;
+	}
+
+	.ad-slot--banner {
+		min-height: 5.5rem;
+		width: 100%;
+	}
+
+	.ad-slot--rail {
+		min-height: 15rem;
+		width: 100%;
+	}
+</style>
