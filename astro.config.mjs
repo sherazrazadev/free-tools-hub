@@ -18,8 +18,12 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      // Exclude noindex stubs / unfinished demos from the public sitemap.
-      filter: (page) => !page.includes("/tools/template-demo"),
+      // Index-worthy URLs only (T08-01). Stubs, demos, and redirect shells stay out.
+      filter: (page) => {
+        if (page.includes("/tools/template-demo")) return false;
+        if (page.includes("/categories")) return false;
+        return true;
+      },
     }),
   ],
 });

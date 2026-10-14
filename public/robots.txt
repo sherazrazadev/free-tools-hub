@@ -2,5 +2,7 @@
 User-agent: *
 Allow: /
 
-# Stub / unfinished demos use noindex in HTML; keep crawl open for public pages.
+# Layout stub — also noindex in HTML and omitted from sitemap (T08-01).
+Disallow: /tools/template-demo
+
 Sitemap: https://tools.tommyfx.pk/sitemap-index.xml

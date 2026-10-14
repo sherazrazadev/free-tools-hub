@@ -299,6 +299,14 @@ function menuHasActive(tools: { path: string }[]) {
 
 				const params = new URLSearchParams(window.location.search);
 				const toolsParam = params.get('tools');
+				const categoryIds = {
+					'work-hours': 1,
+					'photo-signature': 1,
+					'files-media': 1,
+					'business-finance': 1,
+					'ai-governance': 1,
+				};
+
 				if (toolsParam === '1' || toolsParam === '') {
 					openAllTools();
 					params.delete('tools');
@@ -307,6 +315,9 @@ function menuHasActive(tools: { path: string }[]) {
 						(params.toString() ? '?' + params.toString() : '') +
 						window.location.hash;
 					history.replaceState({}, '', next);
+				} else if (toolsParam && categoryIds[toolsParam]) {
+					// Legacy /?tools=<category> → /#cat-<category>
+					window.location.replace('/#cat-' + toolsParam);
 				}
 			})();
 		</script>

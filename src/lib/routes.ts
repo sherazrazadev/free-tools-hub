@@ -18,8 +18,8 @@ export type Category = {
   id: string;
   name: string;
   blurb: string;
-  /** Home filter / mega focus: /?tools=<id> */
-  href: string;
+	/** Homepage category anchor, e.g. /#cat-work-hours */
+	href: string;
   /** Accent tint for icons (decorative) */
   tint: string;
   tools: PlannedTool[];
@@ -30,7 +30,7 @@ export const categories: Category[] = [
     id: "work-hours",
     name: "Work hours & shifts",
     blurb: "Hours, overtime, and shift totals without a spreadsheet.",
-    href: "/?tools=work-hours",
+    href: "/#cat-work-hours",
     tint: "#0a7a6c",
     tools: [
       {
@@ -46,7 +46,7 @@ export const categories: Category[] = [
     id: "photo-signature",
     name: "Photo & signature",
     blurb: "Prepare application photos and signatures in the browser.",
-    href: "/?tools=photo-signature",
+    href: "/#cat-photo-signature",
     tint: "#0b6e99",
     tools: [
       {
@@ -77,7 +77,7 @@ export const categories: Category[] = [
     id: "files-media",
     name: "Files & media",
     blurb: "Light file helpers that stay on your device when claimed.",
-    href: "/?tools=files-media",
+    href: "/#cat-files-media",
     tint: "#c45c26",
     tools: [
       {
@@ -100,7 +100,7 @@ export const categories: Category[] = [
     id: "business-finance",
     name: "Business & finance",
     blurb: "Everyday business and money calculators, fast and clear.",
-    href: "/?tools=business-finance",
+    href: "/#cat-business-finance",
     tint: "#2f6b4f",
     tools: [
       {
@@ -123,7 +123,7 @@ export const categories: Category[] = [
     id: "ai-governance",
     name: "AI governance",
     blurb: "Defensive self-check utilities for AI use and hygiene.",
-    href: "/?tools=ai-governance",
+    href: "/#cat-ai-governance",
     tint: "#3d4f6f",
     tools: [
       {

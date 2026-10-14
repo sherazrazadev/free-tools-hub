@@ -79,7 +79,11 @@ const tools = liveTools();
 			<div class="home-cat-grid">
 				{
 					cats.map((category) => (
-						<article class="home-cat" style={`--cat-tint:${category.tint}`}>
+						<article
+							class="home-cat"
+							id={`cat-${category.id}`}
+							style={`--cat-tint:${category.tint}`}
+						>
 							<div class="home-cat__top">
 								<span class="home-cat__dot" aria-hidden="true" />
 								<h3>{category.name}</h3>
@@ -364,6 +368,7 @@ const tools = liveTools();
 	}
 
 	.home-cat {
+		scroll-margin-top: 5.5rem;
 		padding: 1.35rem 1.3rem 1.2rem;
 		border: 1px solid color-mix(in srgb, var(--cat-tint) 22%, var(--color-border));
 		border-radius: var(--radius-lg);
