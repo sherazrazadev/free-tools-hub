@@ -8,6 +8,7 @@
  */
 import AdSlot from '../components/ads/AdSlot.astro';
 import BaseLayout from './BaseLayout.astro';
+import { getPublishedGuidesForTool } from '../lib/guides';
 
 interface Props {
 	title: string;
@@ -37,8 +38,14 @@ const hasExample = Astro.slots.has('example');
 const hasFormula = Astro.slots.has('formula');
 const hasLimitations = Astro.slots.has('limitations');
 const hasRelated = Astro.slots.has('related');
+
+// Published guides (T08-06) that lead to this tool. Slug comes from /tools/<slug>.
+const toolSlug = Astro.url.pathname.replace(/\/$/, '').split('/').pop() ?? '';
+const guides = getPublishedGuidesForTool(toolSlug);
+const hasGuides = guides.length > 0;
+
 const hasAside =
-	hasRelated || hasInstructions || hasExample || hasFormula || hasLimitations;
+	hasRelated || hasGuides || hasInstructions || hasExample || hasFormula || hasLimitations;
 ---
 
 <BaseLayout title={title} description={description} noindex={noindex}>
@@ -56,6 +63,11 @@ const hasAside =
 		<div class:list={['tool-page__layout', { 'tool-page__layout--solo': !hasAside }]}>
 			<div class="tool-page__primary">
 				<section class="tool-page__tool" aria-label="Tool">
+					<noscript>
+						<p class="tool-page__noscript" role="alert">
+							This tool runs in your browser and needs JavaScript. Turn it on and reload the page.
+						</p>
+					</noscript>
 					<slot name="tool" />
 				</section>
 				{/* Below the tool - never on uploads/buttons/results inside the island */}
@@ -75,6 +87,24 @@ const hasAside =
 								>
 									<h2 id="tool-related">Related tools</h2>
 									<slot name="related" />
+								</section>
+							)
+						}
+
+						{
+							hasGuides && (
+								<section
+									class="tool-page__aside-block tool-page__related tool-page__guides"
+									aria-labelledby="tool-guides"
+								>
+									<h2 id="tool-guides">Guide</h2>
+									<ul class="related-list">
+										{guides.map((guide) => (
+											<li>
+												<a href={`/guides/${guide.slug}`}>{guide.title}</a>
+											</li>
+										))}
+									</ul>
 								</section>
 							)
 						}
@@ -167,7 +197,7 @@ const hasAside =
 		align-items: center;
 		gap: 0.4rem;
 		margin: 0 0 var(--space-3);
-		font-size: 0.82rem;
+		font-size: 0.85rem;
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -175,6 +205,9 @@ const hasAside =
 	}
 
 	.tool-page__crumb a {
+		/* Larger hit area without growing the intro: padding is cancelled by negative margin. */
+		padding-block: 0.65rem;
+		margin-block: -0.65rem;
 		color: var(--color-accent-deep);
 		text-decoration: none;
 	}
@@ -192,7 +225,7 @@ const hasAside =
 	.tool-page__purpose {
 		margin: 0;
 		max-width: 48rem;
-		font-size: 1.08rem;
+		font-size: 1.1rem;
 		line-height: 1.55;
 		color: var(--color-muted);
 	}
@@ -209,6 +242,7 @@ const hasAside =
 
 	.tool-page__tool {
 		margin: 0;
+		min-width: 0;
 		padding: var(--space-5);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
@@ -267,6 +301,22 @@ const hasAside =
 		margin-bottom: var(--space-3);
 	}
 
+	.tool-page__noscript {
+		margin: 0;
+		padding: var(--space-3) var(--space-4);
+		border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+		border-radius: var(--radius-md);
+		background: color-mix(in srgb, var(--color-danger) 6%, var(--color-surface));
+		color: var(--color-danger);
+		font-size: var(--text-ui);
+		font-weight: 600;
+	}
+
+	/* Related rail with no links: hide the empty card instead of showing a bare heading. */
+	.tool-page__related:not(:has(li)) {
+		display: none;
+	}
+
 	.tool-page__related {
 		order: -1;
 		border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
@@ -282,6 +332,7 @@ const hasAside =
 	.tool-page__panel summary {
 		cursor: pointer;
 		list-style: none;
+		min-height: 2.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -448,6 +499,45 @@ const hasAside =
 
 		.tool-page {
 			padding-bottom: var(--space-6);
+		}
+	}
+
+	/*
+	 * Phones: the working control must be on the first screen.
+	 * Same copy, tighter chrome (intro was ~420px tall on work-hours).
+	 */
+	@media (max-width: 639px) {
+		.tool-page {
+			padding-top: var(--space-4);
+		}
+
+		.tool-page__intro {
+			margin-bottom: var(--space-4);
+			padding: var(--space-3) var(--space-4);
+		}
+
+		.tool-page__crumb {
+			margin-bottom: var(--space-1);
+			font-size: 0.72rem;
+		}
+
+		.tool-page h1 {
+			margin-bottom: var(--space-2);
+			font-size: 1.6rem;
+			line-height: 1.15;
+		}
+
+		.tool-page__purpose {
+			font-size: 0.9rem;
+			line-height: 1.45;
+		}
+
+		.tool-page__layout {
+			gap: var(--space-4);
+		}
+
+		.tool-page__tool {
+			padding: var(--space-3);
 		}
 	}
 

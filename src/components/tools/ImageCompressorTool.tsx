@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
+import { formatBytes } from "../../lib/format";
 import { compressImage } from "../../lib/tools/image-compressor/compress";
 import {
   bytesToKbLabel,
@@ -13,6 +14,7 @@ import type {
 import {
   canvasToBlob,
   drawResizedCanvas,
+  needsOpaqueBackground,
 } from "../../lib/tools/image-resizer/canvasResize";
 import { loadImageFromFile } from "../../lib/tools/image-resizer/loadImage";
 import { revokeObjectUrl } from "../../lib/tools/image-resizer/objectUrl";
@@ -81,7 +83,6 @@ export default function ImageCompressorTool() {
 
   async function onFileChange(fileList: FileList | null) {
     setError(null);
-    clearSource();
     const file = fileList?.[0];
     if (!file) return;
 
@@ -89,11 +90,13 @@ export default function ImageCompressorTool() {
     const loaded = await loadImageFromFile(file);
     setBusy(false);
 
+    // A bad replacement must not throw away the image already loaded.
     if (!loaded.ok) {
       setError(loaded.error.message);
       return;
     }
 
+    clearSource();
     sourceUrlRef.current = loaded.value.objectUrl;
     setSource({
       image: loaded.value.image,
@@ -143,7 +146,12 @@ export default function ImageCompressorTool() {
         format,
         maxBytes,
         encode: async ({ width, height, quality, type }) => {
-          const canvas = drawResizedCanvas(source.image, width, height);
+          const canvas = drawResizedCanvas(
+            source.image,
+            width,
+            height,
+            needsOpaqueBackground(type) ? "#ffffff" : undefined,
+          );
           return canvasToBlob(canvas, type, quality);
         },
       });
@@ -189,20 +197,19 @@ export default function ImageCompressorTool() {
         accept={accept}
         disabled={busy}
         fileLabel={source?.file.name ?? null}
+        fileMeta={
+          source
+            ? `${source.naturalWidth}×${source.naturalHeight} · ${formatBytes(source.file.size)}`
+            : null
+        }
+        onClear={() => {
+          clearSource();
+          setError(null);
+        }}
+        error={source ? null : error}
         hint={`JPEG, PNG, WebP, or GIF · max ${maxMb} MB · processed in this browser only`}
         onFiles={(files) => void onFileChange(files)}
       />
-
-      {source ? (
-        <p className="ic-tool__meta">
-          Original:{" "}
-          <strong>
-            {source.naturalWidth}×{source.naturalHeight}
-          </strong>
-          <span aria-hidden="true"> · </span>
-          <strong>{bytesToKbLabel(source.file.size)}</strong>
-        </p>
-      ) : null}
 
       <div className="ic-tool__fields">
         <label className="ic-tool__field">
@@ -268,8 +275,9 @@ export default function ImageCompressorTool() {
           className="btn btn--ghost"
           disabled={!source || busy}
           onClick={() => void runCompress(false)}
+          aria-busy={busy}
         >
-          Compress &amp; preview
+          {busy ? "Working…" : "Compress & preview"}
         </button>
         <button
           type="button"
@@ -279,22 +287,9 @@ export default function ImageCompressorTool() {
         >
           Download compressed image
         </button>
-        {source ? (
-          <button
-            type="button"
-            className="btn btn--ghost"
-            disabled={busy}
-            onClick={() => {
-              clearSource();
-              setError(null);
-            }}
-          >
-            Clear
-          </button>
-        ) : null}
       </div>
 
-      {error ? (
+      {error && source ? (
         <p className="ic-tool__error" role="alert">
           {error}
         </p>

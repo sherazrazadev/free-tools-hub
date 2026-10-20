@@ -3,7 +3,7 @@
 	padding: 0.65rem 0.75rem;
 	border-left: 3px solid var(--color-accent);
 	background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .fr-tool__disclaimer strong {
@@ -19,6 +19,12 @@
 		grid-template-columns: 1fr;
 	}
 }
+/* Beside the answer column the inputs get narrower: stack them. */
+@container calc (min-width: 640px) and (max-width: 819px) {
+	.fr-tool__fields {
+		grid-template-columns: 1fr;
+	}
+}
 .fr-tool__field {
 	display: flex;
 	flex-direction: column;
@@ -29,36 +35,37 @@
 .fr-tool__field input {
 	font: inherit;
 	font-weight: 400;
+	min-height: 2.75rem;
 	padding: 0.5rem 0.65rem;
 	border: 1px solid var(--color-border-strong);
 	border-radius: var(--radius-md);
 	background: var(--color-surface);
 	color: var(--color-fg);
 }
+.fr-tool__field input:hover {
+	border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border-strong));
+}
+.fr-tool__field input:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: 1px;
+	border-color: var(--color-accent);
+}
+.fr-tool__field input[aria-invalid="true"] {
+	border-color: var(--color-danger);
+	background: color-mix(in srgb, var(--color-danger) 5%, var(--color-surface));
+}
 .fr-tool__hint {
 	font-weight: 400;
-	font-size: 0.82rem;
+	font-size: 0.85rem;
 	color: var(--color-muted);
 }
 .fr-tool__actions {
 	margin-top: 0.85rem;
 }
-.fr-tool__error {
-	margin: 0.85rem 0 0;
-	color: var(--color-danger, #b42318);
-	font-size: 0.95rem;
-}
 .fr-tool__results {
 	margin-top: 1.25rem;
 	padding-top: 0.5rem;
 	border-top: 1px solid var(--color-border);
-}
-.fr-tool__stat {
-	margin: 0 0 0.5rem;
-	font-size: 0.98rem;
-}
-.fr-tool__stat--hero {
-	font-size: 1.15rem;
 }
 .fr-tool__muted {
 	color: var(--color-muted);
@@ -77,7 +84,7 @@
 .fr-tool__scenarios table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	margin-top: 0.5rem;
 }
 .fr-tool__scenarios th,

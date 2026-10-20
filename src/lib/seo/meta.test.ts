@@ -34,4 +34,12 @@ describe('buildPageMeta', () => {
 		expect(meta.robots).toBe('noindex, nofollow');
 		expect(meta.og.url).toBe('https://tools.tommyfx.pk/tools/template-demo/');
 	});
+
+	it('includes an absolute square share image for OG and Twitter', () => {
+		const meta = buildPageMeta({ pathname: '/about' });
+		expect(meta.og.image).toBe('https://tools.tommyfx.pk/brand/tommytools-icon.jpg');
+		expect(meta.twitter.image).toBe(meta.og.image);
+		expect(meta.og.imageWidth).toBe(meta.og.imageHeight);
+		expect(meta.og.imageAlt.length).toBeGreaterThan(0);
+	});
 });

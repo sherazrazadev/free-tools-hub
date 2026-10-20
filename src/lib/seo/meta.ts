@@ -1,4 +1,12 @@
-import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_NAME, SITE_URL } from './site';
+import {
+	DEFAULT_DESCRIPTION,
+	DEFAULT_TITLE,
+	SHARE_IMAGE_ALT,
+	SHARE_IMAGE_PATH,
+	SHARE_IMAGE_SIZE,
+	SITE_NAME,
+	SITE_URL,
+} from './site';
 
 const META_DESCRIPTION_MAX = 160;
 
@@ -38,11 +46,17 @@ export type PageMeta = {
 		title: string;
 		description: string;
 		url: string;
+		image: string;
+		imageAlt: string;
+		imageWidth: number;
+		imageHeight: number;
 	};
 	twitter: {
 		card: 'summary';
 		title: string;
 		description: string;
+		image: string;
+		imageAlt: string;
 	};
 };
 
@@ -56,6 +70,7 @@ export function buildPageMeta({
 }: PageMetaInput): PageMeta {
 	const desc = truncateDescription(description);
 	const url = canonicalUrl(pathname);
+	const image = `${SITE_URL}${SHARE_IMAGE_PATH}`;
 
 	return {
 		title,
@@ -68,11 +83,17 @@ export function buildPageMeta({
 			title,
 			description: desc,
 			url,
+			image,
+			imageAlt: SHARE_IMAGE_ALT,
+			imageWidth: SHARE_IMAGE_SIZE,
+			imageHeight: SHARE_IMAGE_SIZE,
 		},
 		twitter: {
 			card: 'summary',
 			title,
 			description: desc,
+			image,
+			imageAlt: SHARE_IMAGE_ALT,
 		},
 	};
 }

@@ -1,5 +1,5 @@
 import { buildEncodePlan } from './plan';
-import type { CompressFormat, CompressOutcome, EncodeFn } from './types';
+import type { CompressFormat, CompressOutcome, EncodeFn, EncodeParams } from './types';
 
 /**
  * Iteratively encode until under maxBytes (when set), or once at start quality.
@@ -23,18 +23,14 @@ export async function compressImage(input: {
 		maxBytes: input.maxBytes,
 	});
 
-	let best: CompressOutcome | null = null;
+	const tracker: { best: CompressOutcome | null } = { best: null };
 	let attempts = 0;
+	const hasTarget = input.maxBytes !== null && input.maxBytes > 0;
 
-	for (const step of plan) {
+	const run = async (step: EncodeParams): Promise<CompressOutcome> => {
 		attempts += 1;
 		const blob = await input.encode(step);
 		const outputBytes = blob.size;
-		const metLimit =
-			input.maxBytes === null || input.maxBytes <= 0
-				? true
-				: outputBytes <= input.maxBytes;
-
 		const candidate: CompressOutcome = {
 			blob,
 			width: step.width,
@@ -44,28 +40,53 @@ export async function compressImage(input: {
 			format: input.format,
 			originalBytes: input.originalBytes,
 			outputBytes,
-			maxBytes: input.maxBytes !== null && input.maxBytes > 0 ? input.maxBytes : null,
-			metLimit,
+			maxBytes: hasTarget ? input.maxBytes : null,
+			metLimit: !hasTarget || outputBytes <= (input.maxBytes as number),
 			attempts,
 			message: null,
 		};
+		if (!tracker.best || outputBytes < tracker.best.outputBytes) tracker.best = candidate;
+		return candidate;
+	};
 
-		if (!best || outputBytes < best.outputBytes) {
-			best = candidate;
-		}
-
-		if (metLimit && input.maxBytes !== null && input.maxBytes > 0) {
-			return {
-				...candidate,
-				message: null,
-			};
-		}
-
-		if (input.maxBytes === null || input.maxBytes <= 0) {
-			return candidate;
-		}
+	if (!hasTarget) {
+		return run(plan[0]);
 	}
 
+	// Group the ladder by scale. At each scale, try the lowest quality first:
+	// if even that is too big, the rest of the ladder at this scale cannot fit,
+	// so skip it. Otherwise search for the best quality that fits.
+	const groups = new Map<number, EncodeParams[]>();
+	for (const step of plan) {
+		const list = groups.get(step.scale) ?? [];
+		list.push(step);
+		groups.set(step.scale, list);
+	}
+
+	for (const steps of groups.values()) {
+		const lastIndex = steps.length - 1;
+		const floorResult = await run(steps[lastIndex]);
+		if (!floorResult.metLimit) continue;
+
+		// Size shrinks as quality drops, so binary-search the ladder for the
+		// highest quality that still fits (about log2(steps) encodes).
+		let lo = 0;
+		let hi = lastIndex;
+		let winner = floorResult;
+		while (lo < hi) {
+			const mid = Math.floor((lo + hi) / 2);
+			const result = await run(steps[mid]);
+			if (result.metLimit) {
+				winner = result;
+				hi = mid;
+			} else {
+				lo = mid + 1;
+			}
+		}
+		return { ...winner, attempts, message: null };
+	}
+
+	const best = tracker.best;
 	if (!best) {
 		throw new Error('Compression produced no output.');
 	}

@@ -36,6 +36,39 @@ export function computeOutputDimensions(input: {
 	return { width: w, height: h };
 }
 
+/** Longest side a browser canvas can reliably encode (Safari/iOS fails well above this). */
+export const MAX_OUTPUT_EDGE = 8192;
+/** Total pixel budget (about 8000x6000); iOS Safari caps canvas area near 16.7 MP. */
+export const MAX_OUTPUT_PIXELS = 48_000_000;
+
+/**
+ * Returns a user-facing message when the requested output is too large for a
+ * browser canvas, or null when it is safe to render.
+ */
+export function outputSizeProblem(width: number, height: number): string | null {
+	if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) {
+		return 'Enter a width and height of at least 1 pixel.';
+	}
+	if (width > MAX_OUTPUT_EDGE || height > MAX_OUTPUT_EDGE) {
+		return `Each side must be ${MAX_OUTPUT_EDGE} px or less.`;
+	}
+	if (width * height > MAX_OUTPUT_PIXELS) {
+		return 'That output is too large for a browser to render. Use smaller dimensions.';
+	}
+	return null;
+}
+
+/**
+ * Parse a text field into a whole pixel count. Empty or invalid text returns
+ * null so the field can stay empty while the user is typing.
+ */
+export function parsePixelField(raw: string): number | null {
+	const trimmed = raw.trim();
+	if (!trimmed) return null;
+	const n = Math.floor(Number(trimmed));
+	return Number.isFinite(n) && n >= 1 ? n : null;
+}
+
 /** Default targets = source size (clamped to sane max for UI defaults). */
 export function defaultTargets(
 	sourceWidth: number,

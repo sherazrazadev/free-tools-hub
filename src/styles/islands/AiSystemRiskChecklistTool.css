@@ -4,7 +4,7 @@
 	padding: 0.65rem 0.75rem;
 	border-left: 3px solid var(--color-accent);
 	background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .arc-tool__summary {
@@ -17,7 +17,7 @@
 	margin: 0 0 0.35rem;
 }
 .arc-tool__score-note {
-	font-size: 0.88rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .arc-tool__actions {
@@ -28,7 +28,7 @@
 }
 .arc-tool__status {
 	margin: 0 0 0.85rem;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	font-weight: 600;
 	color: var(--color-accent-deep, var(--color-accent));
 }
@@ -43,7 +43,7 @@
 	margin: 0;
 	padding-left: 1.2rem;
 	color: var(--color-muted);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 }
 .arc-tool__section {
 	margin: 1.25rem 0;
@@ -56,7 +56,7 @@
 }
 .arc-tool__purpose {
 	margin: 0 0 0.85rem;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .arc-tool__items {
@@ -72,7 +72,7 @@
 }
 .arc-tool__rationale {
 	margin: 0 0 0.5rem;
-	font-size: 0.88rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .arc-tool__choices {
@@ -84,6 +84,6 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	cursor: pointer;
 }

@@ -1,13 +1,17 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
+import { formatBytes } from "../../lib/format";
 import {
   canvasToBlob,
   drawResizedCanvas,
+  needsOpaqueBackground,
   outputMimeFor,
 } from "../../lib/tools/image-resizer/canvasResize";
 import {
   computeOutputDimensions,
   defaultTargets,
+  outputSizeProblem,
+  parsePixelField,
 } from "../../lib/tools/image-resizer/dimensions";
 import { loadImageFromFile } from "../../lib/tools/image-resizer/loadImage";
 import { revokeObjectUrl } from "../../lib/tools/image-resizer/objectUrl";
@@ -33,8 +37,8 @@ export default function ImageResizerTool() {
   const baseId = useId();
   const { toolComplete, toolExport } = useToolAnalytics("image-resizer");
   const [source, setSource] = useState<SourceState | null>(null);
-  const [width, setWidth] = useState(800);
-  const [height, setHeight] = useState(600);
+  const [widthText, setWidthText] = useState("800");
+  const [heightText, setHeightText] = useState("600");
   const [lockAspect, setLockAspect] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -79,7 +83,6 @@ export default function ImageResizerTool() {
 
   async function onFileChange(fileList: FileList | null) {
     setError(null);
-    clearSource();
     const file = fileList?.[0];
     if (!file) return;
 
@@ -87,11 +90,13 @@ export default function ImageResizerTool() {
     const result = await loadImageFromFile(file);
     setBusy(false);
 
+    // A bad replacement must not throw away the image already loaded.
     if (!result.ok) {
       setError(result.error.message);
       return;
     }
 
+    clearSource();
     const { value } = result;
     const targets = defaultTargets(value.naturalWidth, value.naturalHeight);
     sourceUrlRef.current = value.objectUrl;
@@ -102,58 +107,59 @@ export default function ImageResizerTool() {
       naturalHeight: value.naturalHeight,
       file: value.file,
     });
-    setWidth(targets.width);
-    setHeight(targets.height);
+    setWidthText(String(targets.width));
+    setHeightText(String(targets.height));
     setLockAspect(true);
   }
 
   function onWidthChange(raw: string) {
-    const n = Math.max(1, Math.floor(Number(raw) || 0));
-    setWidth(n);
-    if (source && lockAspect) {
+    setWidthText(raw);
+    const n = parsePixelField(raw);
+    if (n !== null && source && lockAspect) {
       const next = computeOutputDimensions({
         sourceWidth: source.naturalWidth,
         sourceHeight: source.naturalHeight,
         targetWidth: n,
-        targetHeight: height,
+        targetHeight: parsePixelField(heightText) ?? n,
         lockAspect: true,
         drive: "width",
       });
-      setHeight(next.height);
+      setHeightText(String(next.height));
     }
     clearPreview();
   }
 
   function onHeightChange(raw: string) {
-    const n = Math.max(1, Math.floor(Number(raw) || 0));
-    setHeight(n);
-    if (source && lockAspect) {
+    setHeightText(raw);
+    const n = parsePixelField(raw);
+    if (n !== null && source && lockAspect) {
       const next = computeOutputDimensions({
         sourceWidth: source.naturalWidth,
         sourceHeight: source.naturalHeight,
-        targetWidth: width,
+        targetWidth: parsePixelField(widthText) ?? n,
         targetHeight: n,
         lockAspect: true,
         drive: "height",
       });
-      setWidth(next.width);
+      setWidthText(String(next.width));
     }
     clearPreview();
   }
 
   function onLockChange(checked: boolean) {
     setLockAspect(checked);
-    if (checked && source) {
+    const w = parsePixelField(widthText);
+    if (checked && source && w !== null) {
       const next = computeOutputDimensions({
         sourceWidth: source.naturalWidth,
         sourceHeight: source.naturalHeight,
-        targetWidth: width,
-        targetHeight: height,
+        targetWidth: w,
+        targetHeight: parsePixelField(heightText) ?? w,
         lockAspect: true,
         drive: "width",
       });
-      setWidth(next.width);
-      setHeight(next.height);
+      setWidthText(String(next.width));
+      setHeightText(String(next.height));
     }
     clearPreview();
   }
@@ -164,23 +170,41 @@ export default function ImageResizerTool() {
       return;
     }
 
+    const w = parsePixelField(widthText);
+    const h = parsePixelField(heightText);
+    if (w === null || h === null) {
+      setError("Enter a width and height of at least 1 pixel.");
+      return;
+    }
     const dims = computeOutputDimensions({
       sourceWidth: source.naturalWidth,
       sourceHeight: source.naturalHeight,
-      targetWidth: width,
-      targetHeight: height,
+      targetWidth: w,
+      targetHeight: h,
       lockAspect,
       drive: "width",
     });
+    const sizeProblem = outputSizeProblem(dims.width, dims.height);
+    if (sizeProblem) {
+      setError(sizeProblem);
+      return;
+    }
 
     setBusy(true);
     setError(null);
     try {
-      const canvas = drawResizedCanvas(source.image, dims.width, dims.height);
-      if (canvas.width !== dims.width || canvas.height !== dims.height) {
-        throw new Error("Output canvas size did not match the request.");
-      }
       const mime = outputMimeFor(source.file.type);
+      const canvas = drawResizedCanvas(
+        source.image,
+        dims.width,
+        dims.height,
+        needsOpaqueBackground(mime.type) ? "#ffffff" : undefined,
+      );
+      if (canvas.width !== dims.width || canvas.height !== dims.height) {
+        throw new Error(
+          "This browser could not create a canvas that large. Try smaller dimensions.",
+        );
+      }
       const blob = await canvasToBlob(canvas, mime.type, mime.quality);
 
       clearPreview();
@@ -220,30 +244,29 @@ export default function ImageResizerTool() {
         accept={accept}
         disabled={busy}
         fileLabel={source?.file.name ?? null}
+        fileMeta={
+          source
+            ? `${source.naturalWidth}×${source.naturalHeight} · ${formatBytes(source.file.size)}`
+            : null
+        }
+        onClear={() => {
+          clearSource();
+          setError(null);
+        }}
+        error={source ? null : error}
         hint={`JPEG, PNG, WebP, or GIF · max ${maxMb} MB · processed in this browser only`}
         onFiles={(files) => void onFileChange(files)}
       />
-
-      {source ? (
-        <p className="ir-tool__meta">
-          Original:{" "}
-          <strong>
-            {source.naturalWidth}×{source.naturalHeight}
-          </strong>
-          <span aria-hidden="true"> · </span>
-          {source.file.type || "unknown type"}
-        </p>
-      ) : null}
 
       <div className="ir-tool__fields">
         <label className="ir-tool__field">
           <span>Width (px)</span>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={1}
-            step={1}
-            value={width}
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={widthText}
             disabled={!source || busy}
             onChange={(e) => onWidthChange(e.target.value)}
           />
@@ -251,11 +274,11 @@ export default function ImageResizerTool() {
         <label className="ir-tool__field">
           <span>Height (px)</span>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={1}
-            step={1}
-            value={height}
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={heightText}
             disabled={!source || busy}
             onChange={(e) => onHeightChange(e.target.value)}
           />
@@ -278,8 +301,9 @@ export default function ImageResizerTool() {
           className="btn btn--ghost"
           disabled={!source || busy}
           onClick={() => void buildPreviewAndDownload(false)}
+          aria-busy={busy}
         >
-          Update preview
+          {busy ? "Working…" : "Update preview"}
         </button>
         <button
           type="button"
@@ -289,22 +313,9 @@ export default function ImageResizerTool() {
         >
           Download resized image
         </button>
-        {source ? (
-          <button
-            type="button"
-            className="btn btn--ghost"
-            disabled={busy}
-            onClick={() => {
-              clearSource();
-              setError(null);
-            }}
-          >
-            Clear
-          </button>
-        ) : null}
       </div>
 
-      {error ? (
+      {error && source ? (
         <p className="ir-tool__error" role="alert">
           {error}
         </p>

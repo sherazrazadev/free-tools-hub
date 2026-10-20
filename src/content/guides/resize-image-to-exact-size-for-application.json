@@ -1,0 +1,56 @@
+{
+  "slug": "resize-image-to-exact-size-for-application",
+  "title": "How to resize a photo to exact pixels",
+  "description": "Resize a photo to the exact width and height an application form asks for, keep proportions, and then bring the file under a KB limit if there is one.",
+  "lede": "Application forms ask for exact pixels and sometimes a maximum file size. Do the two jobs in the right order.",
+  "publishDate": "2026-10-21",
+  "tool": "image-resizer",
+  "problem": "A form rejects your photo because it is 4000 pixels wide, or 3 MB, or the wrong shape. Two separate numbers are involved: the pixel size (width by height) and the file size (KB). Changing one changes the other, so the order matters.",
+  "steps": [
+    {
+      "title": "Read the form's rules first",
+      "body": "Note the exact pixel size or size range, the allowed formats (JPEG, PNG), and any maximum file size in KB. Write them down; you will check against them at the end."
+    },
+    {
+      "title": "Open the image resizer and choose your photo",
+      "body": "Pick the JPEG, PNG, WebP or GIF from your device. The file stays in your browser; nothing is uploaded. The tool accepts files up to 20 MB."
+    },
+    {
+      "title": "Enter the width and height the form asks for",
+      "body": "Type the target width and height in pixels. Leave Lock aspect ratio on if the form only gives one dimension or you do not want the face stretched. Turn it off only when the form needs an exact size and a different shape is acceptable."
+    },
+    {
+      "title": "Preview, then download",
+      "body": "Select Update preview and look at the result. If the crop or shape is wrong, change the numbers and preview again. Download when it looks right."
+    },
+    {
+      "title": "If there is a KB limit, compress after resizing",
+      "body": "Open the image compressor with the resized file, set the maximum KB and compress. Resizing first means the compressor has fewer pixels to squeeze, so it needs less quality loss."
+    },
+    {
+      "title": "Check the final file against the form",
+      "body": "Look at the file's properties on your device: pixel size, size in KB and format. If the compressor had to reduce the dimensions to hit the KB limit, the pixel size will have changed. In that case try a lower starting quality, or ask whether the form accepts a range."
+    }
+  ],
+  "example": "A 1600 x 1200 photo with Lock aspect ratio on and width set to 800 becomes 800 x 600. If the form then wants the file under 100 KB, run that 800 x 600 file through the compressor with a maximum of 100 KB.",
+  "limitations": [
+    "This is a size helper, not an official stamp of acceptance. Always check the form's own photo rules.",
+    "Output is limited to 8192 pixels per side and about 48 megapixels in total.",
+    "GIF animation is not kept. A GIF is saved as a JPEG with a white background where it was transparent.",
+    "A very small KB limit may not be reachable without unacceptable quality; the compressor then says the limit was not met."
+  ],
+  "faq": [
+    {
+      "q": "Should I resize or compress first?",
+      "a": "Resize first. Fewer pixels means a smaller file before any quality is lost, so the compressor has less work to do."
+    },
+    {
+      "q": "Why did my photo look stretched?",
+      "a": "Lock aspect ratio was off and the width and height did not match the original shape. Turn it on and set only one dimension, or crop the photo to the right shape before resizing."
+    },
+    {
+      "q": "Is my photo uploaded anywhere?",
+      "a": "No. Resizing happens in your browser using the HTML canvas, so the file does not leave your device."
+    }
+  ]
+}

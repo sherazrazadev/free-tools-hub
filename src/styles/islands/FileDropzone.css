@@ -3,6 +3,16 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.45rem;
+	/* Long file names must never widen the tool (grid/flex items default to min-width:auto). */
+	min-width: 0;
+	max-width: 100%;
+}
+
+.file-drop__status,
+.file-drop__chip,
+.file-drop__zone {
+	min-width: 0;
+	max-width: 100%;
 }
 
 .file-drop__label {
@@ -79,17 +89,163 @@
 	font-weight: 500;
 }
 
-.file-drop__chosen {
-	max-width: 100%;
-	padding: 0.25rem 0.65rem;
-	border-radius: var(--radius-pill);
-	background: color-mix(in srgb, var(--color-accent) 12%, #fff);
+.file-drop__zone:active:not(:disabled) {
+	transform: scale(0.995);
+}
+
+/* Drag-over: solid border + stronger tint so the target is unmistakable. */
+.file-drop__zone.is-dragging {
+	border-style: solid;
+	border-width: 2px;
+	background:
+		radial-gradient(80% 120% at 50% 0%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 65%),
+		color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+/* Filled: collapse to a compact "replace" target; the chip carries the file. */
+.file-drop__zone.is-filled {
+	min-height: 4.5rem;
+	padding: 0.75rem 1rem;
+	flex-direction: row;
+	gap: 0.75rem;
+}
+
+.file-drop__zone.is-filled .file-drop__icon {
+	width: 2.5rem;
+	height: 2.5rem;
+}
+
+.file-drop__zone.is-filled .file-drop__icon svg {
+	width: 26px;
+	height: 26px;
+}
+
+.file-drop__zone.has-error {
+	border-color: var(--color-danger);
+	background:
+		color-mix(in srgb, var(--color-danger) 5%, var(--color-surface));
+}
+
+.file-drop__zone.has-error:hover:not(:disabled) {
+	border-color: var(--color-danger);
+}
+
+.file-drop__status:empty {
+	display: none;
+}
+
+.file-drop__chip {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 2.75rem;
+	padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+	color: var(--color-fg);
+}
+
+.file-drop__chip-icon {
+	flex-shrink: 0;
 	color: var(--color-accent-deep);
-	font-size: 0.85rem;
+}
+
+.file-drop__chip-text {
+	/* Zero intrinsic width: a long name truncates instead of widening ancestors. */
+	display: flex;
+	flex-direction: column;
+	width: 0;
+	min-width: 0;
+	flex: 1 1 0%;
+	padding-block: 0.25rem;
+}
+
+.file-drop__chip-name {
+	font-size: 0.9rem;
 	font-weight: 700;
+	line-height: 1.3;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.file-drop__chip-meta {
+	color: var(--color-muted);
+	font-size: 0.85rem;
+	font-weight: 600;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.file-drop__chip-clear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.3rem;
+	flex-shrink: 0;
+	min-width: 2.75rem;
+	min-height: 2.75rem;
+	padding: 0 0.6rem;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--color-muted);
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 700;
+	cursor: pointer;
+	transition:
+		background-color var(--duration-fast) var(--ease-out),
+		color var(--duration-fast) var(--ease-out);
+}
+
+.file-drop__chip-clear:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+	color: var(--color-danger);
+}
+
+.file-drop__chip-clear:active:not(:disabled) {
+	background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+}
+
+.file-drop__chip-clear:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: 0;
+}
+
+.file-drop__chip-clear:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Icon-only on narrow screens; label stays available to AT via aria-label. */
+@media (max-width: 479px) {
+	.file-drop__chip-clear-text {
+		display: none;
+	}
+}
+
+.file-drop__error {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0.55rem 0.75rem;
+	border: 1px solid color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface));
+	color: var(--color-danger);
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.file-drop__error svg {
+	flex-shrink: 0;
+	margin-top: 0.12rem;
 }
 
 .file-drop__input {
@@ -112,7 +268,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.file-drop__zone {
+	.file-drop__zone,
+	.file-drop__chip-clear {
 		transition: none;
+	}
+
+	.file-drop__zone:active:not(:disabled) {
+		transform: none;
 	}
 }

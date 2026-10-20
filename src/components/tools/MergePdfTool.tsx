@@ -1,7 +1,6 @@
 import { useId, useRef, useState } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
-import { loadPdfDocument } from "../../lib/tools/pdf/document";
-import { mergePdfItems } from "../../lib/tools/merge-pdf/merge";
+import { formatBytes } from "../../lib/format";
 import { moveItem, removeAtIndex } from "../../lib/tools/merge-pdf/order";
 import type { MergeItem } from "../../lib/tools/merge-pdf/types";
 import {
@@ -40,14 +39,19 @@ export default function MergePdfTool() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<ListedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
+  /** Problems with the files themselves - shown inside the dropzone. */
+  const [fileError, setFileError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resultNote, setResultNote] = useState<string | null>(null);
 
   const maxMb = Math.floor(MAX_PDF_BYTES / (1024 * 1024));
+  const totalPages = items.reduce((sum, i) => sum + i.pageCount, 0);
+  const totalBytes = items.reduce((sum, i) => sum + i.size, 0);
 
   async function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
     setError(null);
+    setFileError(null);
     setResultNote(null);
     setBusy(true);
 
@@ -59,7 +63,7 @@ export default function MergePdfTool() {
       ];
       const selection = validatePdfSelection(probe);
       if (!selection.ok) {
-        setError(selection.message);
+        setFileError(selection.message);
         return;
       }
 
@@ -67,15 +71,15 @@ export default function MergePdfTool() {
       for (const file of incoming) {
         const one = validatePdfFile(file);
         if (!one.ok) {
-          setError(one.message);
+          setFileError(one.message);
           return;
         }
 
         const buffer = await file.arrayBuffer();
         const bytes = new Uint8Array(buffer);
-        const loaded = await loadPdfDocument(bytes);
+        const loaded = await (await import("../../lib/tools/pdf/document")).loadPdfDocument(bytes);
         if (!loaded.ok) {
-          setError(`${file.name}: ${loaded.message}`);
+          setFileError(`${file.name}: ${loaded.message}`);
           return;
         }
 
@@ -90,7 +94,7 @@ export default function MergePdfTool() {
 
       setItems(next);
     } catch (e) {
-      setError(
+      setFileError(
         e instanceof Error ? e.message : "Could not read the selected files.",
       );
     } finally {
@@ -113,7 +117,7 @@ export default function MergePdfTool() {
 
     setBusy(true);
     try {
-      const result = await mergePdfItems(items);
+      const result = await (await import("../../lib/tools/merge-pdf/merge")).mergePdfItems(items);
       if (!result.ok) {
         setError(result.message);
         return;
@@ -134,6 +138,7 @@ export default function MergePdfTool() {
   function clearAll() {
     setItems([]);
     setError(null);
+    setFileError(null);
     setResultNote(null);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -147,7 +152,17 @@ export default function MergePdfTool() {
         multiple
         disabled={busy || items.length >= MAX_PDF_FILES}
         inputRef={inputRef}
-        fileLabel={items.length ? `${items.length} file(s) selected` : null}
+        fileLabel={
+          items.length
+            ? `${items.length} PDF${items.length === 1 ? "" : "s"} selected`
+            : null
+        }
+        fileMeta={
+          items.length
+            ? `${totalPages} page${totalPages === 1 ? "" : "s"} · ${formatBytes(totalBytes)}`
+            : null
+        }
+        error={fileError}
         hint={`PDF only · max ${maxMb} MB each · up to ${MAX_PDF_FILES} files · processed in this browser only`}
         onFiles={(files) => void addFiles(files)}
       />
@@ -192,6 +207,7 @@ export default function MergePdfTool() {
                   aria-label={`Remove ${item.name}`}
                   onClick={() => {
                     setItems((prev) => removeAtIndex(prev, index));
+                    setFileError(null);
                     setResultNote(null);
                   }}
                 >
@@ -211,6 +227,7 @@ export default function MergePdfTool() {
           className="btn btn--primary"
           disabled={busy || items.length === 0}
           onClick={() => void onMerge()}
+          aria-busy={busy}
         >
           {busy ? "Working…" : "Merge and download"}
         </button>

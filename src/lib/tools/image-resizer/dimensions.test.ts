@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeOutputDimensions, defaultTargets } from './dimensions';
+import {
+	computeOutputDimensions,
+	defaultTargets,
+	MAX_OUTPUT_EDGE,
+	outputSizeProblem,
+	parsePixelField,
+} from './dimensions';
 
 describe('computeOutputDimensions', () => {
 	it('uses exact width/height when aspect unlocked', () => {
@@ -62,5 +68,37 @@ describe('defaultTargets', () => {
 		const d = defaultTargets(8000, 4000, 4000);
 		expect(d.width).toBe(4000);
 		expect(d.height).toBe(2000);
+	});
+});
+
+describe('outputSizeProblem', () => {
+	it('accepts normal sizes', () => {
+		expect(outputSizeProblem(800, 600)).toBeNull();
+		expect(outputSizeProblem(MAX_OUTPUT_EDGE, 1000)).toBeNull();
+	});
+
+	it('rejects zero, NaN, and oversize edges', () => {
+		expect(outputSizeProblem(0, 100)).toMatch(/at least 1/);
+		expect(outputSizeProblem(Number.NaN, 100)).toMatch(/at least 1/);
+		expect(outputSizeProblem(MAX_OUTPUT_EDGE + 1, 10)).toMatch(/8192/);
+	});
+
+	it('rejects totals above the pixel budget', () => {
+		expect(outputSizeProblem(8000, 8000)).toMatch(/too large/);
+	});
+});
+
+describe('parsePixelField', () => {
+	it('returns null for empty or invalid text so the field can be cleared', () => {
+		expect(parsePixelField('')).toBeNull();
+		expect(parsePixelField('   ')).toBeNull();
+		expect(parsePixelField('abc')).toBeNull();
+		expect(parsePixelField('0')).toBeNull();
+		expect(parsePixelField('-5')).toBeNull();
+	});
+
+	it('floors valid numbers', () => {
+		expect(parsePixelField('640')).toBe(640);
+		expect(parsePixelField('640.9')).toBe(640);
 	});
 });

@@ -4,6 +4,7 @@ import {
   calculateFreelancerRate,
   compareMarginScenarios,
 } from "../../lib/tools/freelancer-rate/rate";
+import ResultSummary from "../ui/ResultSummary";
 import "../../styles/islands/FreelancerRateTool.css";
 
 type FieldKey =
@@ -130,79 +131,103 @@ export default function FreelancerRateTool() {
     });
   }
 
+  const inputError = !parsed
+    ? "Enter non-negative numbers in every field."
+    : result && !result.ok
+      ? result.message
+      : null;
+
   return (
-    <div className="fr-tool">
-      <p className="fr-tool__disclaimer">
-        <strong>Planning estimate only</strong> - not a guarantee of income, and
-        not a tax, payroll, or legal calculation. Adjust for your market, taxes,
-        and non-billable time.
-      </p>
+    <div className="fr-tool calc-split">
+      <div className="calc-split__layout">
+        <div className="calc-split__main">
+          <p className="fr-tool__disclaimer">
+            <strong>Planning estimate only</strong> - not a guarantee of income,
+            and not a tax, payroll, or legal calculation. Adjust for your
+            market, taxes, and non-billable time.
+          </p>
 
-      <div className="fr-tool__fields">
-        {FIELDS.map((field) => (
-          <label key={field.key} className="fr-tool__field">
-            <span>{field.label}</span>
-            <input
-              id={`${baseId}-${field.key}`}
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="any"
-              value={fields[field.key]}
-              onChange={(e) => onChange(field.key, e.target.value)}
+          <div className="fr-tool__fields">
+            {FIELDS.map((field) => {
+              const invalid = parseNonNeg(fields[field.key]) === null;
+              return (
+                <label key={field.key} className="fr-tool__field">
+                  <span>{field.label}</span>
+                  <input
+                    id={`${baseId}-${field.key}`}
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    step="any"
+                    value={fields[field.key]}
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={`${baseId}-${field.key}-hint`}
+                    onChange={(e) => onChange(field.key, e.target.value)}
+                  />
+                  <span
+                    id={`${baseId}-${field.key}-hint`}
+                    className="fr-tool__hint"
+                  >
+                    {field.hint}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="fr-tool__actions">
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={resetExample}
+            >
+              Reset example
+            </button>
+          </div>
+        </div>
+
+        <div className="calc-split__side">
+          {result?.ok && parsed ? (
+            <ResultSummary
+              label="Hourly rate needed"
+              value={money(result.hourlyRate)}
+              unit="per hour"
+              detail={
+                <>
+                  Daily rate <strong>{money(result.dailyRate)}</strong> (
+                  {result.hoursPerDay} h/day × {result.daysPerWeek} days/week)
+                </>
+              }
+              rows={[
+                {
+                  label: "Required annual billings",
+                  value: money(result.requiredBillings),
+                  note: `Income + expenses${
+                    result.marginPercent > 0
+                      ? `, with ${result.marginPercent}% margin`
+                      : ""
+                  }`,
+                },
+                {
+                  label: "Annual billable hours",
+                  value: result.annualBillableHours.toLocaleString(),
+                  unit: "h",
+                  note: `${parsed.weeks} weeks × ${parsed.hoursPerWeek} h/week`,
+                },
+              ]}
+              assumption="Assumes every billable hour is paid and inputs hold all year. Planning estimate - not a tax calculation."
             />
-            <span className="fr-tool__hint">{field.hint}</span>
-          </label>
-        ))}
+          ) : (
+            <ResultSummary
+              label="Hourly rate needed"
+              error={inputError ?? "Enter your income goal and capacity."}
+            />
+          )}
+        </div>
       </div>
-
-      <div className="fr-tool__actions">
-        <button type="button" className="btn btn--ghost" onClick={resetExample}>
-          Reset example
-        </button>
-      </div>
-
-      {!parsed ? (
-        <p className="fr-tool__error" role="alert">
-          Enter non-negative numbers in every field.
-        </p>
-      ) : null}
-
-      {result && !result.ok ? (
-        <p className="fr-tool__error" role="alert">
-          {result.message}
-        </p>
-      ) : null}
 
       {result?.ok ? (
-        <div className="fr-tool__results" aria-live="polite">
-          <p className="fr-tool__stat">
-            Annual billable hours:{" "}
-            <strong>{result.annualBillableHours.toLocaleString()}</strong>
-          </p>
-          <p className="fr-tool__stat">
-            Required annual billings:{" "}
-            <strong>{money(result.requiredBillings)}</strong>
-            <span className="fr-tool__muted">
-              {" "}
-              (income + expenses
-              {result.marginPercent > 0
-                ? `, with ${result.marginPercent}% margin`
-                : ""}
-              )
-            </span>
-          </p>
-          <p className="fr-tool__stat fr-tool__stat--hero">
-            Hourly rate: <strong>{money(result.hourlyRate)}</strong>
-          </p>
-          <p className="fr-tool__stat fr-tool__stat--hero">
-            Daily rate: <strong>{money(result.dailyRate)}</strong>
-            <span className="fr-tool__muted">
-              {" "}
-              ({result.hoursPerDay} h/day × {result.daysPerWeek} days/week)
-            </span>
-          </p>
-
+        <div className="fr-tool__results">
           <ul className="fr-tool__formulas">
             <li>{result.formulas.billableHours}</li>
             <li>{result.formulas.requiredBillings}</li>

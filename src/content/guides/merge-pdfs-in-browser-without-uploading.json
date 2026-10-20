@@ -1,0 +1,56 @@
+{
+  "slug": "merge-pdfs-in-browser-without-uploading",
+  "title": "How to merge PDFs without uploading",
+  "description": "Combine several PDF files into one in your browser, set the page order, and download the result, with no upload of your documents to a server.",
+  "lede": "Join cover letters, scans and reports into one PDF, and keep the files on your own device.",
+  "publishDate": "2026-10-22",
+  "tool": "merge-pdf",
+  "problem": "Many online mergers send your files to a server first, which is a poor fit for ID scans, contracts or anything private. A browser-based merger does the work on your own device, so the documents never need to leave it.",
+  "steps": [
+    {
+      "title": "Put the PDFs in one folder",
+      "body": "Give them names that sort in the order you want, such as 1-cover.pdf and 2-report.pdf. It saves reordering later."
+    },
+    {
+      "title": "Open the PDF merger and add your files",
+      "body": "Choose one or more PDFs. You can add more in a second pick. Each file is checked on the way in; a damaged or non-PDF file shows an error and is not added."
+    },
+    {
+      "title": "Set the order",
+      "body": "Use Up and Down to move a file, or Remove to drop it. The list from top to bottom is the page order of the merged document."
+    },
+    {
+      "title": "Merge and download",
+      "body": "Select Merge and download. The tool copies every page, in list order, into one new PDF and saves it as merged.pdf."
+    },
+    {
+      "title": "Open the result and check it",
+      "body": "Scroll through merged.pdf before you send it. Check page order, page count and that scans are readable. If something is wrong, use Clear and start again."
+    },
+    {
+      "title": "Check for yourself that nothing is uploaded",
+      "body": "Open your browser's developer tools, go to the Network tab, then run a merge. You should see no request that sends your PDF out. This is a check you can repeat any time."
+    }
+  ],
+  "example": "Add cover.pdf (1 page) and then report.pdf (3 pages). Merged in that order you get one 4-page PDF: the cover first, then the three report pages.",
+  "limitations": [
+    "Limits are 25 MB per PDF, 20 files, and 80 MB combined. They protect your browser tab and are not a promise that every file under the limit will work.",
+    "Password-protected or encrypted PDFs are not supported. Unlock them first.",
+    "Forms, bookmarks and some advanced PDF features may not be kept exactly in the merged file.",
+    "Phones and tablets with little free memory can freeze or fail on large or image-heavy scans. Try a computer or merge in smaller batches."
+  ],
+  "faq": [
+    {
+      "q": "Are my PDFs sent to a server?",
+      "a": "No. The merge runs in your browser tab using the pdf-lib library. You can confirm it with the Network tab as described above."
+    },
+    {
+      "q": "Can I change the order after adding the files?",
+      "a": "Yes. Use Up and Down on each file before you merge. The order shown is the order in the result."
+    },
+    {
+      "q": "How do I split a PDF afterwards?",
+      "a": "Use the PDF splitter to extract page ranges into a new file."
+    }
+  ]
+}

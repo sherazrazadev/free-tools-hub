@@ -68,4 +68,55 @@ describe('compressImage', () => {
 		expect(out.outputBytes).toBeLessThan(30_000);
 		expect(encode.mock.calls.length).toBe(out.attempts);
 	});
+
+	it('skips a scale whose lowest quality is still too big', async () => {
+		const encode = vi.fn(async (p) => fakeBlob(p.scale >= 0.8 ? 90_000 : 4_000));
+		const out = await compressImage({
+			sourceWidth: 100,
+			sourceHeight: 100,
+			originalBytes: 200_000,
+			startQuality: 0.9,
+			format: 'image/jpeg',
+			maxBytes: 10_000,
+			encode,
+		});
+		expect(out.metLimit).toBe(true);
+		expect(out.scale).toBe(0.7);
+		// 1.0, 0.9, 0.8 floor probes, then 0.7 floor + a short quality search.
+		expect(encode.mock.calls.length).toBeLessThan(12);
+		expect(out.quality).toBe(0.9);
+	});
+
+	it('uses about one encode per scale when nothing can fit', async () => {
+		const encode = vi.fn(async () => fakeBlob(500_000));
+		const out = await compressImage({
+			sourceWidth: 100,
+			sourceHeight: 100,
+			originalBytes: 900_000,
+			startQuality: 0.9,
+			format: 'image/jpeg',
+			maxBytes: 1_000,
+			encode,
+		});
+		expect(out.metLimit).toBe(false);
+		expect(encode.mock.calls.length).toBe(6);
+	});
+
+	it('finds the highest quality that fits with a short search', async () => {
+		// 0.1-1.0 ladder: size grows with quality; limit 10_000 -> best fit is q=0.6 (6_000*... below)
+		const encode = vi.fn(async (p) => fakeBlob(Math.round(p.quality * 20_000)));
+		const out = await compressImage({
+			sourceWidth: 100,
+			sourceHeight: 100,
+			originalBytes: 90_000,
+			startQuality: 1,
+			format: 'image/jpeg',
+			maxBytes: 10_000,
+			encode,
+		});
+		expect(out.metLimit).toBe(true);
+		expect(out.outputBytes).toBeLessThanOrEqual(10_000);
+		expect(out.quality).toBeCloseTo(0.5, 5);
+		expect(out.attempts).toBeLessThanOrEqual(7);
+	});
 });

@@ -4,8 +4,8 @@ import ImageCompressorTool from '../../components/tools/ImageCompressorTool';
 ---
 
 <ToolLayout
-	title="Image Compressor - Reduce photo file size in your browser | TommyTools"
-	description="Free image compressor: JPEG or WebP quality, optional max KB with iterative best-effort attempts. Reports when a size limit cannot be met. Runs locally - no upload."
+	title="Image Compressor - Reduce Photo Size in KB | TommyTools"
+	description="Free image compressor: set JPEG or WebP quality and an optional max KB, with best-effort retries. Says when a size limit can't be met. Runs locally, no upload."
 	heading="Image compressor"
 	purpose="Reduce an image’s file size with quality control and an optional max KB target. Compression is best-effort: if the limit cannot be met, the page says so clearly."
 	category="Photo & signature"
@@ -38,8 +38,9 @@ import ImageCompressorTool from '../../components/tools/ImageCompressorTool';
 	<div slot="formula">
 		<p>
 			Without max KB: one encode at starting quality and full pixel size.<br />
-			With max KB: try quality from start → 10% (step 5%), then scale 100% → 50%, keeping the
-			smallest blob; stop early when size ≤ target.
+			With max KB: at each scale (100% → 50%) test the lowest quality first; if that fits, search
+			between it and your start quality (5% steps) for the highest quality that is still ≤ target.
+			If no scale fits, the smallest attempt is offered and the limit is marked not met.
 		</p>
 	</div>
 
@@ -49,7 +50,7 @@ import ImageCompressorTool from '../../components/tools/ImageCompressorTool';
 				<strong>Exact KB is not guaranteed.</strong> Some images cannot reach a very small limit
 				without extreme downscaling or unacceptable quality.
 			</li>
-			<li>PNG input is re-encoded as JPEG or WebP (lossy). Transparency may become a solid fill depending on the browser encoder.</li>
+			<li>PNG input is re-encoded as JPEG or WebP (lossy). JPEG has no transparency, so transparent areas become white; WebP keeps transparency.</li>
 			<li>GIF animation is not preserved.</li>
 			<li>Very large images may fail or be slow on low-memory devices (20 MB client soft limit).</li>
 		</ul>

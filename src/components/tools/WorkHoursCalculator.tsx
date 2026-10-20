@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
 import {
   dayTotalToCsv,
@@ -6,6 +6,7 @@ import {
   weekTotalToCsv,
 } from "../../lib/tools/work-hours/exportCsv";
 import { applyOvertime } from "../../lib/tools/work-hours/overtime";
+import { parseTimeToMinutes } from "../../lib/tools/work-hours/duration";
 import {
   calculateDayTotal,
   type ShiftInput,
@@ -19,6 +20,7 @@ import {
   type WeekDayInput,
   type WeekdayId,
 } from "../../lib/tools/work-hours/week";
+import ResultSummary, { type ResultRow } from "../ui/ResultSummary";
 import "../../styles/islands/WorkHoursCalculator.css";
 
 type Mode = "day" | "week";
@@ -53,6 +55,33 @@ function makeShift(
     breakMinutes: partial?.breakMinutes ?? "30",
   };
 }
+
+function formatClock(totalMinutes: number): string {
+  const h = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const m = String(totalMinutes % 60).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+/**
+ * Defaults for "Add shift": start where the previous shift ended (so the new row
+ * never overlaps it) and run up to 4 hours, capped at 23:59. Falls back to the
+ * generic afternoon shift when there is no room left in the day.
+ */
+function shiftAfter(previous: ShiftDraft | undefined): ShiftDraft {
+  const fallback = makeShift({ start: "14:00", end: "18:00", breakMinutes: "0" });
+  if (!previous || previous.endsNextDay) return fallback;
+  const start = parseTimeToMinutes(previous.end);
+  if (start === null || start >= 23 * 60 + 59) return fallback;
+  const end = Math.min(start + 4 * 60, 23 * 60 + 59);
+  return makeShift({
+    start: formatClock(start),
+    end: formatClock(end),
+    breakMinutes: "0",
+  });
+}
+
+/** Day OT is usually judged per day (8 h); week OT per week (40 h). */
+const DEFAULT_THRESHOLD: Record<Mode, string> = { day: "8", week: "40" };
 
 function toShiftInput(draft: ShiftDraft): ShiftInput {
   const parsed = Number(draft.breakMinutes);
@@ -93,6 +122,28 @@ function formatElapsed(hours: number, minutes: number): string {
   return `${hLabel} ${mLabel}`;
 }
 
+/** Arrow / Home / End move between tabs (WAI-ARIA tabs pattern). */
+function moveTab<T extends string>(
+  e: KeyboardEvent<HTMLDivElement>,
+  ids: readonly T[],
+  current: T,
+  select: (id: T) => void,
+) {
+  if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)) return;
+  e.preventDefault();
+  const i = ids.indexOf(current);
+  const next =
+    e.key === "Home"
+      ? 0
+      : e.key === "End"
+        ? ids.length - 1
+        : (i + (e.key === "ArrowRight" ? 1 : -1) + ids.length) % ids.length;
+  select(ids[next]);
+  e.currentTarget
+    .querySelectorAll<HTMLButtonElement>('[role="tab"]')
+    [next]?.focus();
+}
+
 function ShiftEditor({
   shift,
   title,
@@ -100,6 +151,7 @@ function ShiftEditor({
   onChange,
   onRemove,
   netLabel,
+  error,
 }: {
   shift: ShiftDraft;
   title: string;
@@ -107,11 +159,15 @@ function ShiftEditor({
   onChange: (patch: Partial<ShiftDraft>) => void;
   onRemove: () => void;
   netLabel?: string;
+  /** Problem with this row, shown next to the inputs that need fixing. */
+  error?: string;
 }) {
   return (
-    <section className="wh-tool__shift">
+    <section
+      className={error ? "wh-tool__shift has-error" : "wh-tool__shift"}
+    >
       <div className="wh-tool__shift-head">
-        <h3>{title}</h3>
+        <h2>{title}</h2>
         {canRemove ? (
           <button type="button" className="wh-tool__linkish" onClick={onRemove}>
             Remove
@@ -145,6 +201,12 @@ function ShiftEditor({
             min={0}
             step={1}
             value={shift.breakMinutes}
+            aria-invalid={
+              shift.breakMinutes.trim() !== "" &&
+              !(Number(shift.breakMinutes) >= 0)
+                ? true
+                : undefined
+            }
             onChange={(e) => onChange({ breakMinutes: e.target.value })}
           />
         </label>
@@ -157,7 +219,11 @@ function ShiftEditor({
         />
         <span>Ends next day (overnight shift)</span>
       </label>
-      {netLabel ? <p className="wh-tool__row-net">{netLabel}</p> : null}
+      {error ? (
+        <p className="wh-tool__row-error">{error}</p>
+      ) : netLabel ? (
+        <p className="wh-tool__row-net">{netLabel}</p>
+      ) : null}
     </section>
   );
 }
@@ -174,12 +240,52 @@ export default function WorkHoursCalculator() {
     draftsFromWeek(fixtureWeek()),
   );
   const [activeDay, setActiveDay] = useState<WeekdayId>("mon");
-  const [threshold, setThreshold] = useState("40");
+  const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD.day);
+  const [thresholdEdited, setThresholdEdited] = useState(false);
   const [multiplier, setMultiplier] = useState("1.5");
   const [hourlyRate, setHourlyRate] = useState("");
 
   const dayTotal = calculateDayTotal(dayShifts.map(toShiftInput));
   const weekTotal = calculateWeekTotal(weekInputsFromDrafts(weekDays));
+
+  function selectMode(next: Mode) {
+    setMode(next);
+    // Keep a threshold the user typed; otherwise follow the mode (8 h/day, 40 h/week).
+    if (!thresholdEdited) setThreshold(DEFAULT_THRESHOLD[next]);
+  }
+
+  /** Row-level problem for the shift list being edited (day mode or the active weekday). */
+  function rowErrorFor(
+    shifts: ShiftDraft[],
+    index: number,
+  ): string | undefined {
+    const total = calculateDayTotal(shifts.map(toShiftInput));
+    if (total.ok || total.rowIndex !== index) return undefined;
+    return total.code === "row_error"
+      ? (total.rowError?.message ?? total.message)
+      : total.message;
+  }
+
+  /** Status shown on each weekday chip: day off, total, or a problem to fix. */
+  function dayChipStatus(day: DayDraft): {
+    state: "off" | "ok" | "error";
+    text: string;
+    spoken: string;
+  } {
+    if (day.shifts.length === 0) {
+      return { state: "off", text: "Off", spoken: "day off" };
+    }
+    const total = calculateDayTotal(day.shifts.map(toShiftInput));
+    if (!total.ok) {
+      return { state: "error", text: "Fix", spoken: "needs fixing" };
+    }
+    return {
+      state: "ok",
+      spoken: formatElapsed(total.hours, total.minutes),
+      // Compact on purpose: seven chips share one row on wider panels ("8h", "11h30").
+      text: `${total.hours}h${total.minutes ? String(total.minutes).padStart(2, "0") : ""}`,
+    };
+  }
 
   const netMinutes =
     mode === "day"
@@ -253,51 +359,103 @@ export default function WorkHoursCalculator() {
       setWeekDays(draftsFromWeek(fixtureWeek()));
       setActiveDay("mon");
     }
-    setThreshold("40");
+    setThreshold(DEFAULT_THRESHOLD[mode]);
+    setThresholdEdited(false);
     setMultiplier("1.5");
     setHourlyRate("");
   }
 
   const activeWeekDay = weekDays.find((d) => d.id === activeDay)!;
 
+  const activeTotal = mode === "day" ? dayTotal : weekTotal;
+
+  const summaryRows: ResultRow[] = [];
+  if (activeTotal.ok) {
+    summaryRows.push({
+      label: "Net minutes",
+      value: `${activeTotal.totalNetMinutes}`,
+      unit: "min",
+      note: `Gross ${activeTotal.totalGrossMinutes}m − breaks ${activeTotal.totalBreakMinutes}m`,
+    });
+    if (overtime?.ok) {
+      summaryRows.push(
+        {
+          label: "Regular hours",
+          value: overtime.regularHours.toFixed(2),
+          unit: "h",
+        },
+        {
+          label: "Overtime hours",
+          value: overtime.overtimeHours.toFixed(2),
+          unit: "h",
+          note: `Threshold ${overtime.thresholdHours} h @ ${overtime.overtimeMultiplier}x`,
+        },
+      );
+      if (overtime.estimatedGrossPay !== null) {
+        summaryRows.push({
+          label: "Est. gross pay",
+          value: overtime.estimatedGrossPay.toFixed(2),
+          note: `Regular ${overtime.estimatedRegularPay?.toFixed(2)} + OT ${overtime.estimatedOvertimePay?.toFixed(2)}`,
+        });
+      }
+    }
+  }
+
   return (
-    <div className="wh-tool">
+    <div className="wh-tool calc-split">
+      <div className="calc-split__layout">
+      <div className="calc-split__main">
       <div
         className="wh-tool__modes"
         role="tablist"
         aria-label="Calculator mode"
+        onKeyDown={(e) =>
+          moveTab(e, ["day", "week"] as const, mode, selectMode)
+        }
       >
         <button
           type="button"
           role="tab"
+          id={`${baseId}-tab-day`}
+          aria-controls={`${baseId}-panel`}
+          tabIndex={mode === "day" ? 0 : -1}
           aria-selected={mode === "day"}
           className={
             mode === "day" ? "wh-tool__mode is-active" : "wh-tool__mode"
           }
-          onClick={() => setMode("day")}
+          onClick={() => selectMode("day")}
         >
           Day
         </button>
         <button
           type="button"
           role="tab"
+          id={`${baseId}-tab-week`}
+          aria-controls={`${baseId}-panel`}
+          tabIndex={mode === "week" ? 0 : -1}
           aria-selected={mode === "week"}
           className={
             mode === "week" ? "wh-tool__mode is-active" : "wh-tool__mode"
           }
-          onClick={() => setMode("week")}
+          onClick={() => selectMode("week")}
         >
           Week
         </button>
       </div>
 
       {mode === "day" ? (
-        <div className="wh-tool__panel">
+        <div
+          className="wh-tool__panel"
+          role="tabpanel"
+          id={`${baseId}-panel`}
+          aria-labelledby={`${baseId}-tab-day`}
+        >
           {dayShifts.map((shift, index) => (
             <ShiftEditor
               key={shift.key}
               shift={shift}
               title={`Shift ${index + 1}`}
+              error={rowErrorFor(dayShifts, index)}
               canRemove={dayShifts.length > 1}
               onChange={(patch) => updateDayShift(shift.key, patch)}
               onRemove={() =>
@@ -319,14 +477,7 @@ export default function WorkHoursCalculator() {
               type="button"
               className="btn btn--primary"
               onClick={() =>
-                setDayShifts((rows) => [
-                  ...rows,
-                  makeShift({
-                    start: "14:00",
-                    end: "18:00",
-                    breakMinutes: "0",
-                  }),
-                ])
+                setDayShifts((rows) => [...rows, shiftAfter(rows[rows.length - 1])])
               }
             >
               Add shift
@@ -334,26 +485,47 @@ export default function WorkHoursCalculator() {
           </div>
         </div>
       ) : (
-        <div className="wh-tool__panel">
+        <div
+          className="wh-tool__panel"
+          role="tabpanel"
+          id={`${baseId}-panel`}
+          aria-labelledby={`${baseId}-tab-week`}
+        >
           <div
             className="wh-tool__days no-print"
             role="tablist"
             aria-label="Weekday"
+            onKeyDown={(e) =>
+              moveTab(e, WEEKDAY_IDS, activeDay, (id) => setActiveDay(id))
+            }
           >
-            {WEEKDAY_IDS.map((id) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={activeDay === id}
-                className={
-                  activeDay === id ? "wh-tool__day is-active" : "wh-tool__day"
-                }
-                onClick={() => setActiveDay(id)}
-              >
-                {WEEKDAY_LABELS[id].slice(0, 3)}
-              </button>
-            ))}
+            {weekDays.map((day) => {
+              const status = dayChipStatus(day);
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  role="tab"
+                  aria-label={`${WEEKDAY_LABELS[day.id]}: ${status.spoken}`}
+                  tabIndex={activeDay === day.id ? 0 : -1}
+                  aria-selected={activeDay === day.id}
+                  data-state={status.state}
+                  className={
+                    activeDay === day.id
+                      ? "wh-tool__day is-active"
+                      : "wh-tool__day"
+                  }
+                  onClick={() => setActiveDay(day.id)}
+                >
+                  <span className="wh-tool__day-name">
+                    {WEEKDAY_LABELS[day.id].slice(0, 3)}
+                  </span>
+                  <span className="wh-tool__day-hint" aria-hidden="true">
+                    {status.text}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <p className="wh-tool__day-title">{WEEKDAY_LABELS[activeDay]}</p>
@@ -368,6 +540,7 @@ export default function WorkHoursCalculator() {
                 key={shift.key}
                 shift={shift}
                 title={`Shift ${index + 1}`}
+                error={rowErrorFor(activeWeekDay.shifts, index)}
                 canRemove
                 onChange={(patch) =>
                   updateWeekShift(activeDay, shift.key, patch)
@@ -403,11 +576,13 @@ export default function WorkHoursCalculator() {
                           ...day,
                           shifts: [
                             ...day.shifts,
-                            makeShift({
-                              start: "09:00",
-                              end: "17:00",
-                              breakMinutes: "0",
-                            }),
+                            day.shifts.length === 0
+                              ? makeShift({
+                                  start: "09:00",
+                                  end: "17:00",
+                                  breakMinutes: "0",
+                                })
+                              : shiftAfter(day.shifts[day.shifts.length - 1]),
                           ],
                         },
                   ),
@@ -443,7 +618,7 @@ export default function WorkHoursCalculator() {
                       <td>{day.label}</td>
                       <td>
                         {day.day
-                          ? formatElapsed(day.day.hours, day.day.minutes)
+                          ? `${day.day.hours}h ${String(day.day.minutes).padStart(2, "0")}m`
                           : "Off"}
                       </td>
                       <td>{day.day ? `${day.day.totalBreakMinutes}m` : "-"}</td>
@@ -459,18 +634,61 @@ export default function WorkHoursCalculator() {
         </div>
       )}
 
+      {/* Narrow screens: the full answer sits below the inputs, so keep the total in view. */}
+      <p className="wh-tool__mini no-print" aria-hidden="true">
+        <span>{mode === "day" ? "Day total" : "Week total"}</span>
+        <strong>
+          {activeTotal.ok
+            ? `${formatElapsed(activeTotal.hours, activeTotal.minutes)} · ${activeTotal.decimalHours.toFixed(2)} h`
+            : "Check inputs"}
+        </strong>
+      </p>
+      </div>
+
+      <div className="calc-split__side">
+      <ResultSummary
+        id={`${baseId}-result`}
+        label={mode === "day" ? "Daily net total" : "Weekly net total"}
+        error={activeTotal.ok ? null : activeTotal.message}
+        value={
+          activeTotal.ok
+            ? formatElapsed(activeTotal.hours, activeTotal.minutes)
+            : undefined
+        }
+        detail={
+          activeTotal.ok ? (
+            <>
+              Decimal hours: <strong>{activeTotal.decimalHours.toFixed(2)}</strong>
+            </>
+          ) : undefined
+        }
+        rows={summaryRows}
+        assumption="Estimate only - not payroll, legal, overtime-compliance, or tax advice. Breaks are simply subtracted."
+      >
+        {activeTotal.ok && overtime && !overtime.ok ? (
+          <p className="wh-tool__error" role="alert">
+            {overtime.message}
+          </p>
+        ) : null}
+      </ResultSummary>
+
       <details className="wh-tool__ot no-print">
         <summary>Overtime &amp; pay estimate (optional)</summary>
         <div className="wh-tool__fields wh-tool__fields--ot">
           <label className="wh-tool__field">
-            <span>Regular hours threshold</span>
+            <span>
+              Regular hours per {mode === "day" ? "day" : "week"} before overtime
+            </span>
             <input
               type="number"
               inputMode="decimal"
               min={0}
               step={0.5}
               value={threshold}
-              onChange={(e) => setThreshold(e.target.value)}
+              onChange={(e) => {
+                setThreshold(e.target.value);
+                setThresholdEdited(true);
+              }}
             />
           </label>
           <label className="wh-tool__field">
@@ -498,23 +716,21 @@ export default function WorkHoursCalculator() {
           </label>
         </div>
         <p className="wh-tool__break-note">
+          {mode === "day"
+            ? "Day mode compares this one day with the threshold. "
+            : "Week mode compares the whole week with the threshold. "}
           Threshold and multiplier are your inputs - not a claim that this OT
           rule applies in your jurisdiction. Pay figures are gross estimates
           only (no tax/deductions).
         </p>
       </details>
 
-      <p className="wh-tool__break-note">
-        Break minutes are a simple subtraction from elapsed time - not a legal
-        deductible-break classification.
-      </p>
-
       <div className="wh-tool__actions no-print">
         <button
           type="button"
           className="btn btn--primary"
           onClick={onExport}
-          disabled={mode === "day" ? !dayTotal.ok : !weekTotal.ok}
+          disabled={!activeTotal.ok}
         >
           Download CSV
         </button>
@@ -529,89 +745,8 @@ export default function WorkHoursCalculator() {
           Reset
         </button>
       </div>
-
-      {(mode === "day" ? !dayTotal.ok : !weekTotal.ok) ? (
-        <p className="wh-tool__error" role="alert">
-          {mode === "day" && !dayTotal.ok
-            ? dayTotal.message
-            : !weekTotal.ok
-              ? weekTotal.message
-              : null}
-        </p>
-      ) : (
-        <div
-          className="wh-tool__result print-block"
-          aria-live="polite"
-          id={`${baseId}-result`}
-        >
-          <p className="wh-tool__result-label">
-            {mode === "day" ? "Daily net total" : "Weekly net total"}
-          </p>
-          <p className="wh-tool__result-main">
-            {mode === "day" && dayTotal.ok
-              ? formatElapsed(dayTotal.hours, dayTotal.minutes)
-              : weekTotal.ok
-                ? formatElapsed(weekTotal.hours, weekTotal.minutes)
-                : null}
-          </p>
-          <p className="wh-tool__result-meta">
-            {mode === "day" && dayTotal.ok ? (
-              <>
-                Decimal hours:{" "}
-                <strong>{dayTotal.decimalHours.toFixed(2)}</strong>
-                <span aria-hidden="true"> · </span>
-                Gross {dayTotal.totalGrossMinutes}m − breaks{" "}
-                {dayTotal.totalBreakMinutes}m = {dayTotal.totalNetMinutes}m
-              </>
-            ) : weekTotal.ok ? (
-              <>
-                Decimal hours:{" "}
-                <strong>{weekTotal.decimalHours.toFixed(2)}</strong>
-                <span aria-hidden="true"> · </span>
-                Gross {weekTotal.totalGrossMinutes}m − breaks{" "}
-                {weekTotal.totalBreakMinutes}m = {weekTotal.totalNetMinutes}m
-              </>
-            ) : null}
-          </p>
-
-          {overtime && !overtime.ok ? (
-            <p className="wh-tool__error" role="alert">
-              {overtime.message}
-            </p>
-          ) : null}
-
-          {overtime?.ok ? (
-            <div className="wh-tool__ot-result">
-              <p>
-                Regular: <strong>{overtime.regularHours.toFixed(2)} h</strong>
-                <span aria-hidden="true"> · </span>
-                Overtime: <strong>{overtime.overtimeHours.toFixed(2)} h</strong>
-                <span className="wh-tool__muted">
-                  {" "}
-                  (threshold {overtime.thresholdHours}h @{" "}
-                  {overtime.overtimeMultiplier}x)
-                </span>
-              </p>
-              {overtime.estimatedGrossPay !== null ? (
-                <p>
-                  Est. gross pay:{" "}
-                  <strong>{overtime.estimatedGrossPay.toFixed(2)}</strong>
-                  <span className="wh-tool__muted">
-                    {" "}
-                    (regular {overtime.estimatedRegularPay?.toFixed(2)} + OT{" "}
-                    {overtime.estimatedOvertimePay?.toFixed(2)})
-                  </span>
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-
-          <p className="wh-tool__assumption">
-            Estimate only - not payroll, legal, overtime-compliance, or tax
-            advice.
-          </p>
-        </div>
-      )}
+      </div>
+      </div>
     </div>
   );
 }

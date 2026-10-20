@@ -24,6 +24,7 @@ SOP reference: `docs/website-idea.extracted.txt`
 - Claim “processed locally” unless true
 - Log file contents or sensitive inputs to analytics
 - Thin/duplicate SEO pages
+- Add a guide, supporting tool URL or SEO page without a filled row in `docs/KEYWORD-LOG.md` - refuse and ask the operator for the row
 - Commit/push unless the operator explicitly asks
 - Implement more than the assigned ticket
 

@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProsePage from '../../components/ui/ProsePage.astro';
+import ToolIcon from '../../components/ui/ToolIcon.astro';
+import { getPublishedGuides, toolBySlug } from '../../lib/guides';
+import { formatGuideDate } from '../../lib/guides/guides';
+
+export function getStaticPaths() {
+	return getPublishedGuides().map((guide) => ({
+		params: { slug: guide.slug },
+		props: { guide },
+	}));
+}
+
+const { guide } = Astro.props;
+const tool = toolBySlug(guide.tool)!;
+---
+
+<BaseLayout title={`${guide.title} | TommyTools`} description={guide.description}>
+	<ProsePage title={guide.title} lede={guide.lede}>
+		<p class="guide-meta">
+			<a href="/guides">All guides</a>
+			<span aria-hidden="true">·</span>
+			<time datetime={guide.publishDate}>{formatGuideDate(guide.publishDate)}</time>
+			{
+				guide.updated && guide.updated !== guide.publishDate ? (
+					<>
+						<span aria-hidden="true">·</span>
+						<span>
+							Updated <time datetime={guide.updated}>{formatGuideDate(guide.updated)}</time>
+						</span>
+					</>
+				) : null
+			}
+		</p>
+
+		<h2>The problem</h2>
+		<p>{guide.problem}</p>
+
+		<h2>Steps</h2>
+		<ol class="guide-steps">
+			{
+				guide.steps.map((step) => (
+					<li>
+						<strong>{step.title}</strong>
+						<span>{step.body}</span>
+					</li>
+				))
+			}
+		</ol>
+
+		<a class="guide-cta" href={tool.path}>
+			<ToolIcon slug={tool.slug} tint={tool.tint} size="md" />
+			<span class="guide-cta__text">
+				<strong>Open the {tool.name.toLowerCase()}</strong>
+				<span>{tool.blurb}</span>
+			</span>
+			<span class="guide-cta__go" aria-hidden="true">→</span>
+		</a>
+
+		{
+			guide.example ? (
+				<>
+					<h2>Worked example</h2>
+					<p>{guide.example}</p>
+				</>
+			) : null
+		}
+
+		<h2>Limits to know</h2>
+		<ul>
+			{guide.limitations.map((item) => <li>{item}</li>)}
+		</ul>
+
+		<h2>Quick answers</h2>
+		<div class="guide-faq">
+			{
+				guide.faq.map((item) => (
+					<details class="guide-faq__item">
+						<summary>{item.q}</summary>
+						<p>{item.a}</p>
+					</details>
+				))
+			}
+		</div>
+	</ProsePage>
+</BaseLayout>
+
+<style>
+	.guide-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.6rem;
+		margin: 0 0 var(--space-5);
+		font-size: 0.9rem;
+		color: var(--color-muted);
+	}
+
+	.guide-steps {
+		margin: 0 0 var(--space-5);
+		padding: 0;
+		list-style: none;
+		counter-reset: guide-step;
+	}
+
+	.guide-steps li {
+		position: relative;
+		display: grid;
+		gap: 0.2rem;
+		margin: 0 0 var(--space-4);
+		padding-left: 2.6rem;
+		color: var(--color-muted);
+		line-height: 1.6;
+		counter-increment: guide-step;
+	}
+
+	.guide-steps li::before {
+		content: counter(guide-step);
+		position: absolute;
+		left: 0;
+		top: 0.1rem;
+		display: grid;
+		place-items: center;
+		width: 1.85rem;
+		height: 1.85rem;
+		border-radius: var(--radius-pill);
+		background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface));
+		color: var(--color-accent-deep);
+		font-size: 0.9rem;
+		font-weight: 800;
+	}
+
+	.guide-steps li strong {
+		font-size: 1.02rem;
+		color: var(--color-fg);
+	}
+
+	.guide-cta {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		margin: var(--space-5) 0;
+		padding: 1rem 1.1rem;
+		border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+		border-radius: var(--radius-lg);
+		background: linear-gradient(
+			160deg,
+			color-mix(in srgb, var(--color-accent) 9%, var(--color-surface)) 0%,
+			var(--color-surface) 60%
+		);
+		text-decoration: none;
+		transition:
+			border-color var(--duration-fast) var(--ease-out),
+			box-shadow var(--duration-med) var(--ease-out);
+	}
+
+	.guide-cta:hover,
+	.guide-cta:focus-visible {
+		border-color: var(--color-accent);
+		box-shadow: var(--shadow-soft);
+	}
+
+	.guide-cta__text {
+		display: grid;
+		flex: 1;
+		min-width: 0;
+		gap: 0.15rem;
+		color: var(--color-muted);
+		font-size: 0.9rem;
+		font-weight: 500;
+		line-height: 1.4;
+	}
+
+	.guide-cta__text strong {
+		font-size: 1.05rem;
+		color: var(--color-fg);
+	}
+
+	.guide-cta__go {
+		color: var(--color-accent-deep);
+		font-size: 1.2rem;
+		font-weight: 700;
+	}
+
+	.guide-faq {
+		display: grid;
+		gap: var(--space-2);
+	}
+
+	.guide-faq__item {
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+	}
+
+	.guide-faq__item summary {
+		min-height: 2.75rem;
+		display: flex;
+		align-items: center;
+		padding: 0.4rem 0.9rem;
+		font-weight: 700;
+		color: var(--color-fg);
+		cursor: pointer;
+	}
+
+	.guide-faq__item p {
+		margin: 0;
+		padding: 0 0.9rem 0.9rem;
+	}
+</style>

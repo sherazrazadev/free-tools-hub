@@ -1,22 +1,3 @@
-.ir-tool__file {
-	display: flex;
-	flex-direction: column;
-	gap: 0.35rem;
-	font-weight: 600;
-}
-.ir-tool__file input[type='file'] {
-	font: inherit;
-	font-weight: 400;
-}
-.ir-tool__label {
-	font-size: 0.95rem;
-}
-.ir-tool__hint,
-.ir-tool__meta {
-	margin: 0.5rem 0 0;
-	color: var(--color-muted);
-	font-size: 0.9rem;
-}
 .ir-tool__fields {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -38,25 +19,44 @@
 .ir-tool__field input {
 	font: inherit;
 	font-weight: 400;
-	padding: 0.5rem 0.65rem;
+	min-height: 2.75rem;
+	padding: 0.55rem 0.75rem;
 	border: 1px solid var(--color-border-strong);
 	border-radius: var(--radius-md);
 	background: var(--color-surface);
 	color: var(--color-fg);
 }
+.ir-tool__field input:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
 .ir-tool__check {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	margin-top: 0.85rem;
+	gap: 0.6rem;
+	min-height: 2.75rem;
+	margin-top: 0.35rem;
 	font-size: 0.95rem;
 	cursor: pointer;
+}
+.ir-tool__check input {
+	width: 1.2rem;
+	height: 1.2rem;
+	accent-color: var(--color-accent);
 }
 .ir-tool__actions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
 	margin-top: 1rem;
+}
+.ir-tool__actions .btn {
+	flex: 1 1 12rem;
+}
+@media (min-width: 640px) {
+	.ir-tool__actions .btn {
+		flex: 0 1 auto;
+	}
 }
 .ir-tool__error {
 	margin: 0.85rem 0 0;

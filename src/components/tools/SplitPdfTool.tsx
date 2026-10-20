@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
-import { loadPdfDocument } from "../../lib/tools/pdf/document";
+import { formatBytes } from "../../lib/format";
 import {
   MAX_PDF_BYTES,
   PDF_MIME,
@@ -10,7 +10,6 @@ import {
   formatSelectedPages,
   parsePageRanges,
 } from "../../lib/tools/split-pdf/ranges";
-import { splitPdfByIndices } from "../../lib/tools/split-pdf/split";
 import FileDropzone from "../ui/FileDropzone";
 import "../../styles/islands/SplitPdfTool.css";
 
@@ -68,7 +67,7 @@ export default function SplitPdfTool() {
     try {
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
-      const loaded = await loadPdfDocument(bytes);
+      const loaded = await (await import("../../lib/tools/pdf/document")).loadPdfDocument(bytes);
       if (!loaded.ok) {
         setError(loaded.message);
         return;
@@ -105,7 +104,7 @@ export default function SplitPdfTool() {
 
     setBusy(true);
     try {
-      const result = await splitPdfByIndices(source.bytes, parsed.indices);
+      const result = await (await import("../../lib/tools/split-pdf/split")).splitPdfByIndices(source.bytes, parsed.indices);
       if (!result.ok) {
         setError(result.message);
         return;
@@ -142,19 +141,16 @@ export default function SplitPdfTool() {
         disabled={busy}
         inputRef={inputRef}
         fileLabel={source?.name ?? null}
+        fileMeta={
+          source
+            ? `${source.pageCount} page${source.pageCount === 1 ? "" : "s"} · ${formatBytes(source.bytes.byteLength)}`
+            : null
+        }
+        onClear={clearAll}
+        error={source ? null : error}
         hint={`PDF only · max ${maxMb} MB · processed in this browser only`}
         onFiles={(files) => void onFileChange(files)}
       />
-
-      {source ? (
-        <p className="sp-tool__meta">
-          <strong>{source.name}</strong>
-          <span aria-hidden="true"> · </span>
-          {source.pageCount} page{source.pageCount === 1 ? "" : "s"}
-          <span aria-hidden="true"> · </span>
-          numbered <strong>1–{source.pageCount}</strong>
-        </p>
-      ) : null}
 
       <label className="sp-tool__field">
         <span>Pages to extract</span>
@@ -184,22 +180,13 @@ export default function SplitPdfTool() {
           className="btn btn--primary"
           disabled={busy || !source}
           onClick={() => void onSplit()}
+          aria-busy={busy}
         >
           {busy ? "Working…" : "Extract and download"}
         </button>
-        {source ? (
-          <button
-            type="button"
-            className="btn btn--ghost"
-            disabled={busy}
-            onClick={clearAll}
-          >
-            Clear
-          </button>
-        ) : null}
       </div>
 
-      {error ? (
+      {error && source ? (
         <p className="sp-tool__error" role="alert">
           {error}
         </p>

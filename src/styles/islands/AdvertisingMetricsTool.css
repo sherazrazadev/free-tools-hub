@@ -3,7 +3,7 @@
 	padding: 0.65rem 0.75rem;
 	border-left: 3px solid var(--color-accent);
 	background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .am-tool__fields {
@@ -12,6 +12,12 @@
 	gap: 0.85rem;
 }
 @media (max-width: 560px) {
+	.am-tool__fields {
+		grid-template-columns: 1fr;
+	}
+}
+/* Beside the answer column the inputs get narrower: stack them. */
+@container calc (min-width: 640px) and (max-width: 819px) {
 	.am-tool__fields {
 		grid-template-columns: 1fr;
 	}
@@ -26,59 +32,30 @@
 .am-tool__field input {
 	font: inherit;
 	font-weight: 400;
+	min-height: 2.75rem;
 	padding: 0.5rem 0.65rem;
 	border: 1px solid var(--color-border-strong);
 	border-radius: var(--radius-md);
 	background: var(--color-surface);
 	color: var(--color-fg);
 }
+.am-tool__field input:hover {
+	border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border-strong));
+}
+.am-tool__field input:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: 1px;
+	border-color: var(--color-accent);
+}
+.am-tool__field input[aria-invalid="true"] {
+	border-color: var(--color-danger);
+	background: color-mix(in srgb, var(--color-danger) 5%, var(--color-surface));
+}
 .am-tool__hint {
 	font-weight: 400;
-	font-size: 0.82rem;
+	font-size: 0.85rem;
 	color: var(--color-muted);
 }
 .am-tool__actions {
 	margin-top: 0.85rem;
-}
-.am-tool__error {
-	margin: 0.85rem 0 0;
-	color: var(--color-danger, #b42318);
-	font-size: 0.95rem;
-}
-.am-tool__results {
-	display: grid;
-	gap: 0.85rem;
-	margin-top: 1.25rem;
-}
-.am-tool__metric {
-	padding: 0.85rem 0;
-	border-top: 1px solid var(--color-border);
-}
-.am-tool__metric h3 {
-	margin: 0 0 0.35rem;
-	font-size: 1.05rem;
-}
-.am-tool__definition {
-	margin: 0 0 0.45rem;
-	font-size: 0.9rem;
-	color: var(--color-muted);
-}
-.am-tool__value {
-	margin: 0 0 0.35rem;
-	font-size: 1.2rem;
-}
-.am-tool__unavailable {
-	margin: 0 0 0.35rem;
-	font-size: 0.95rem;
-	color: var(--color-muted);
-}
-.am-tool__formula {
-	margin: 0;
-	font-size: 0.88rem;
-	color: var(--color-muted);
-}
-.am-tool__formula-label {
-	font-weight: 700;
-	color: var(--color-fg);
-	margin-right: 0.35rem;
 }

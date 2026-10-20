@@ -43,7 +43,8 @@ import ImageResizerTool from '../../components/tools/ImageResizerTool';
 		<ul>
 			<li>Processing happens in your browser via HTML Canvas - very large images may fail or be slow on low-memory devices.</li>
 			<li>Maximum file size for this tool is 20 MB; decode can still fail for corrupted or exotic encodings.</li>
-			<li>GIF animation is not preserved (browsers typically decode the first frame).</li>
+			<li>Output is limited to 8192 px per side (and about 48 megapixels total) so the browser can render it.</li>
+			<li>GIF animation is not preserved (browsers typically decode the first frame). GIF input is saved as JPEG with a white background where it was transparent.</li>
 			<li>
 				This is a dimension/format helper, not an official “application compliant” stamp. Always check the
 				form’s own photo rules.

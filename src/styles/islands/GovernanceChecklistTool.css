@@ -5,7 +5,7 @@
 	padding: 0.65rem 0.75rem;
 	border-left: 3px solid var(--color-accent);
 	background: color-mix(in srgb, var(--color-accent) 8%, transparent);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .gc-tool__summary {
@@ -18,7 +18,7 @@
 	margin: 0 0 0.35rem;
 }
 .gc-tool__score-note {
-	font-size: 0.88rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .gc-tool__actions {
@@ -29,7 +29,7 @@
 }
 .gc-tool__status {
 	margin: 0 0 0.85rem;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	font-weight: 600;
 	color: var(--color-accent-deep, var(--color-accent));
 }
@@ -44,11 +44,11 @@
 	margin: 0;
 	padding-left: 1.2rem;
 	color: var(--color-muted);
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 }
 .gc-tool__pace {
 	margin: 0 0 1rem;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 	line-height: 1.5;
 }
@@ -93,7 +93,7 @@
 .gc-tool__purpose {
 	margin: 0;
 	padding: 0.75rem 1rem 0;
-	font-size: 0.92rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .gc-tool__section .gc-tool__items {
@@ -125,7 +125,7 @@
 .gc-tool__rationale,
 .gc-tool__ref {
 	margin: 0 0 0.45rem;
-	font-size: 0.88rem;
+	font-size: 0.9rem;
 	color: var(--color-muted);
 }
 .gc-tool__choices {
@@ -136,7 +136,9 @@
 .gc-tool__choice {
 	display: inline-flex;
 	align-items: center;
-	gap: 0.35rem;
-	font-size: 0.92rem;
+	gap: 0.45rem;
+	min-height: 2.5rem; /* ~45px tap target */
+	padding-right: 0.35rem;
+	font-size: 0.9rem;
 	cursor: pointer;
 }

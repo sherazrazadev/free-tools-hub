@@ -5,6 +5,7 @@
 
 import {
   calculateDuration,
+  parseTimeToMinutes,
   type DurationError,
   type DurationInput,
   type DurationSuccess,
@@ -49,8 +50,9 @@ export type DayTotalSuccess = {
 
 export type DayTotalError = {
   ok: false;
-  code: "empty" | "row_error";
+  code: "empty" | "row_error" | "overlap";
   message: string;
+  /** Row that caused the error (for `overlap`, the later of the two shifts). */
   rowIndex?: number;
   rowError?: ShiftNetError;
 };
@@ -116,6 +118,29 @@ export function calculateShiftWithBreak(input: ShiftInput): ShiftNetResult {
   };
 }
 
+/**
+ * First pair of shifts whose time ranges overlap (touching ends are fine:
+ * 09:00–13:00 then 13:00–17:00). Ranges are measured from the start time, so an
+ * overnight shift runs past 24:00 and can clash with a later shift on the same day.
+ */
+function findOverlap(
+  inputs: ShiftInput[],
+  resolved: ShiftNetSuccess[],
+): { first: number; second: number } | null {
+  const ranges = inputs.map((input, i) => {
+    const start = parseTimeToMinutes(input.start) ?? 0;
+    return { start, end: start + resolved[i]!.gross.totalMinutes };
+  });
+  for (let b = 1; b < ranges.length; b++) {
+    for (let a = 0; a < b; a++) {
+      if (ranges[a]!.start < ranges[b]!.end && ranges[b]!.start < ranges[a]!.end) {
+        return { first: a, second: b };
+      }
+    }
+  }
+  return null;
+}
+
 /** Sum net work across one or more shifts for a single day. */
 export function calculateDayTotal(shifts: ShiftInput[]): DayTotalResult {
   if (shifts.length === 0) {
@@ -146,6 +171,16 @@ export function calculateDayTotal(shifts: ShiftInput[]): DayTotalResult {
     totalGrossMinutes += row.gross.totalMinutes;
     totalBreakMinutes += row.unpaidBreakMinutes;
     totalNetMinutes += row.netMinutes;
+  }
+
+  const overlap = findOverlap(shifts, resolved);
+  if (overlap) {
+    return {
+      ok: false,
+      code: "overlap",
+      message: `Shift ${overlap.first + 1} and shift ${overlap.second + 1} overlap, so the same time would be counted twice. Change one of them.`,
+      rowIndex: overlap.second,
+    };
   }
 
   const net = fromMinutes(totalNetMinutes);

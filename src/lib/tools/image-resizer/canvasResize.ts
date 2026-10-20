@@ -1,10 +1,13 @@
 /**
  * Draw source image onto a canvas at exact pixel size (browser-only).
+ * Pass `background` for formats without alpha (JPEG); otherwise transparent
+ * pixels would encode as black.
  */
 export function drawResizedCanvas(
 	source: CanvasImageSource,
 	width: number,
 	height: number,
+	background?: string,
 ): HTMLCanvasElement {
 	const w = Math.max(1, Math.floor(width));
 	const h = Math.max(1, Math.floor(height));
@@ -14,6 +17,10 @@ export function drawResizedCanvas(
 	const ctx = canvas.getContext('2d');
 	if (!ctx) {
 		throw new Error('Canvas 2D is not available in this browser.');
+	}
+	if (background) {
+		ctx.fillStyle = background;
+		ctx.fillRect(0, 0, w, h);
 	}
 	ctx.imageSmoothingEnabled = true;
 	ctx.imageSmoothingQuality = 'high';
@@ -47,4 +54,9 @@ export function outputMimeFor(inputType: string): { type: string; quality?: numb
 	if (t === 'image/png') return { type: 'image/png', ext: 'png' };
 	if (t === 'image/webp') return { type: 'image/webp', quality: 0.92, ext: 'webp' };
 	return { type: 'image/jpeg', quality: 0.92, ext: 'jpg' };
+}
+
+/** JPEG has no alpha channel; transparent areas need a solid fill first. */
+export function needsOpaqueBackground(mimeType: string): boolean {
+	return mimeType.toLowerCase() === 'image/jpeg';
 }

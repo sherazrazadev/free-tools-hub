@@ -4,8 +4,8 @@ import WorkHoursCalculator from '../../components/tools/WorkHoursCalculator';
 ---
 
 <ToolLayout
-	title="Work Hours Calculator - Day, week, breaks, overtime estimate | TommyTools"
-	description="Free work hours and weekly timesheet calculator: multiple shifts, unpaid breaks, overnight, CSV export, and optional overtime/pay estimates. Runs in your browser."
+	title="Work Hours Calculator - Breaks & Overtime | TommyTools"
+	description="Free work hours and weekly timesheet calculator: shifts, unpaid breaks, overnight, CSV export, optional overtime and pay estimates. Runs in your browser."
 	heading="Work hours calculator"
 	purpose="Build a day or week timesheet from shifts. Subtract unpaid break minutes, handle overnight ends, export CSV or print, and optionally split regular vs overtime hours with a gross pay estimate."
 	category="Work hours & shifts"
@@ -21,8 +21,8 @@ import WorkHoursCalculator from '../../components/tools/WorkHoursCalculator';
 			<li>Enter each shift’s start, end, and unpaid break minutes (0 if none).</li>
 			<li>Turn on <strong>Ends next day</strong> when a shift crosses midnight.</li>
 			<li>
-				Optional: open <strong>Overtime &amp; pay estimate</strong> to set a regular-hour
-				threshold, OT multiplier, and hourly rate.
+				Optional: open <strong>Overtime &amp; pay estimate</strong> to set the regular hours
+				before overtime (8 per day or 40 per week by default), OT multiplier, and hourly rate.
 			</li>
 			<li>
 				Use <strong>Download CSV</strong> or <strong>Print</strong> for a summary that matches
@@ -59,6 +59,10 @@ import WorkHoursCalculator from '../../components/tools/WorkHoursCalculator';
 		<ul>
 			<li>Not payroll, tax, or jurisdiction-specific overtime advice.</li>
 			<li>Unpaid break is the minutes you enter; the tool does not decide legal deductibility.</li>
+			<li>
+				Shifts on the same day must not overlap (back-to-back is fine), so time is never counted
+				twice. An overnight shift runs past midnight and can clash with a later shift that day.
+			</li>
 			<li>Pay figures ignore taxes, benefits, and deductions.</li>
 			<li>
 				Week and day workflows share this page (no separate thin SEO clone for “weekly

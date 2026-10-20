@@ -6,6 +6,7 @@ import { getGoogleSiteVerification } from '../lib/analytics/config';
 import { buildPageMeta } from '../lib/seo/meta';
 import { SITE_NAME } from '../lib/seo/site';
 import { liveCategories, liveTools } from '../lib/routes';
+import { getPublishedGuides } from '../lib/guides';
 
 interface Props {
 	title?: string;
@@ -23,6 +24,7 @@ const meta = buildPageMeta({
 	noindex,
 });
 
+const hasGuides = getPublishedGuides().length > 0;
 const allTools = liveTools();
 const popularSlugs = new Set([
 	'work-hours',
@@ -87,6 +89,19 @@ function menuHasActive(tools: { path: string }[]) {
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+		{/* Non-blocking: system fonts paint first, Plus Jakarta Sans swaps in when loaded. */}
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+			media="print"
+			onload="this.media='all'"
+		/>
+		<noscript>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+			/>
+		</noscript>
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={meta.description} />
 		<meta name="robots" content={meta.robots} />
@@ -96,9 +111,15 @@ function menuHasActive(tools: { path: string }[]) {
 		<meta property="og:title" content={meta.og.title} />
 		<meta property="og:description" content={meta.og.description} />
 		<meta property="og:url" content={meta.og.url} />
+		<meta property="og:image" content={meta.og.image} />
+		<meta property="og:image:alt" content={meta.og.imageAlt} />
+		<meta property="og:image:width" content={String(meta.og.imageWidth)} />
+		<meta property="og:image:height" content={String(meta.og.imageHeight)} />
 		<meta name="twitter:card" content={meta.twitter.card} />
 		<meta name="twitter:title" content={meta.twitter.title} />
 		<meta name="twitter:description" content={meta.twitter.description} />
+		<meta name="twitter:image" content={meta.twitter.image} />
+		<meta name="twitter:image:alt" content={meta.twitter.imageAlt} />
 		<meta name="theme-color" content="#0a7a6c" />
 		{
 			googleSiteVerification ? (
@@ -107,11 +128,24 @@ function menuHasActive(tools: { path: string }[]) {
 		}
 		<title>{meta.title}</title>
 		<Analytics />
+		<noscript>
+			<style is:inline>
+				@media (max-width: 960px) {
+					/* No JS: the menu button cannot work, so show the nav (details still toggle natively). */
+					.site-header .nav-toggle {
+						display: none !important;
+					}
+					.site-header .site-nav {
+						display: flex !important;
+					}
+				}
+			</style>
+		</noscript>
 		<slot name="head" />
 	</head>
 	<body class="site">
 		<a class="skip-link" href="#main">Skip to content</a>
-		<header class="site-header">
+		<header class="site-header" data-site-header>
 			<div class="site-header__inner">
 				<a class="site-brand" href="/" aria-label={`${SITE_NAME} home`}>
 					<img
@@ -125,7 +159,18 @@ function menuHasActive(tools: { path: string }[]) {
 					<span class="site-brand__name">{SITE_NAME}</span>
 				</a>
 
-				<nav class="site-nav" aria-label="Primary">
+				<button
+					class="nav-toggle"
+					type="button"
+					aria-expanded="false"
+					aria-controls="site-nav"
+					data-nav-toggle
+				>
+					<span class="nav-toggle__label">Menu</span>
+					<span class="nav-toggle__icon" aria-hidden="true"></span>
+				</button>
+
+				<nav class="site-nav" id="site-nav" aria-label="Primary">
 					{
 						primaryLinks.map((item) => (
 							<a
@@ -231,14 +276,35 @@ function menuHasActive(tools: { path: string }[]) {
 						</a>
 						<p class="site-footer__tag">Browser utilities. No accounts.</p>
 					</div>
-					<nav class="site-footer__links" aria-label="Footer">
-						<a href="/">Home</a>
-						<a href="/faq">FAQ</a>
-						<a href="/about">About</a>
-						<a href="/privacy">Privacy</a>
-						<a href="/terms">Terms</a>
-						<a href="/contact">Contact</a>
-					</nav>
+					<div class="site-footer__cols">
+						<nav class="site-footer__col" aria-label="Popular tools">
+							<p class="site-footer__heading">Popular tools</p>
+							<ul>
+								{
+									popularTools.map((tool) => (
+										<li>
+											<a href={tool.path}>{tool.name}</a>
+										</li>
+									))
+								}
+								<li>
+									<a href="/#tools">All tools</a>
+								</li>
+							</ul>
+						</nav>
+						<nav class="site-footer__col" aria-label="Footer">
+							<p class="site-footer__heading">Site</p>
+							<ul>
+								<li><a href="/">Home</a></li>
+								<li><a href="/faq">FAQ</a></li>
+								{hasGuides && <li><a href="/guides">Guides</a></li>}
+								<li><a href="/about">About</a></li>
+								<li><a href="/privacy">Privacy</a></li>
+								<li><a href="/terms">Terms</a></li>
+								<li><a href="/contact">Contact</a></li>
+							</ul>
+						</nav>
+					</div>
 				</div>
 				<p class="site-footer__copy">© {new Date().getFullYear()} {SITE_NAME}</p>
 			</div>
@@ -261,6 +327,7 @@ function menuHasActive(tools: { path: string }[]) {
 					if (!(mega instanceof HTMLDetailsElement)) return;
 					closeAll(mega);
 					mega.open = true;
+					if (window.matchMedia('(max-width: 960px)').matches) setNavOpen(true);
 					const summary = mega.querySelector('summary');
 					if (summary instanceof HTMLElement) summary.focus();
 				}
@@ -273,6 +340,7 @@ function menuHasActive(tools: { path: string }[]) {
 					menu.querySelectorAll('a').forEach(function (link) {
 						link.addEventListener('click', function () {
 							menu.open = false;
+							setNavOpen(false);
 						});
 					});
 				});
@@ -291,10 +359,39 @@ function menuHasActive(tools: { path: string }[]) {
 						return menu.contains(target);
 					});
 					if (!inside) closeAll(null);
+					if (header instanceof HTMLElement && !header.contains(target)) setNavOpen(false);
+				});
+
+				const header = document.querySelector('[data-site-header]');
+				const toggle = document.querySelector('[data-nav-toggle]');
+				const mobileMq = window.matchMedia('(max-width: 960px)');
+
+				function setNavOpen(open) {
+					if (!(header instanceof HTMLElement) || !(toggle instanceof HTMLElement)) return;
+					if (open) header.setAttribute('data-nav-open', '');
+					else header.removeAttribute('data-nav-open');
+					toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+					if (!open) closeAll(null);
+				}
+
+				if (toggle instanceof HTMLElement) {
+					toggle.addEventListener('click', function () {
+						setNavOpen(!header.hasAttribute('data-nav-open'));
+					});
+				}
+
+				mobileMq.addEventListener('change', function () {
+					setNavOpen(false);
 				});
 
 				document.addEventListener('keydown', function (event) {
-					if (event.key === 'Escape') closeAll(null);
+					if (event.key !== 'Escape') return;
+					const wasOpen = header instanceof HTMLElement && header.hasAttribute('data-nav-open');
+					closeAll(null);
+					if (wasOpen) {
+						setNavOpen(false);
+						if (toggle instanceof HTMLElement) toggle.focus();
+					}
 				});
 
 				const params = new URLSearchParams(window.location.search);
@@ -374,6 +471,7 @@ function menuHasActive(tools: { path: string }[]) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.65rem;
+		min-height: 2.5rem;
 		flex-shrink: 0;
 		color: var(--color-fg);
 		text-decoration: none;
@@ -399,6 +497,81 @@ function menuHasActive(tools: { path: string }[]) {
 		color: var(--color-accent-deep);
 	}
 
+	.nav-toggle {
+		display: none;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 2.5rem;
+		padding: 0.4rem 0.9rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-pill);
+		background: var(--color-surface);
+		color: var(--color-fg);
+		font: inherit;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition:
+			border-color var(--duration-fast) var(--ease-out),
+			color var(--duration-fast) var(--ease-out),
+			background-color var(--duration-fast) var(--ease-out);
+	}
+
+	.nav-toggle:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent-deep);
+	}
+
+	.nav-toggle:active {
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+	}
+
+	.nav-toggle[aria-expanded='true'] {
+		border-color: var(--color-accent);
+		color: var(--color-accent-deep);
+	}
+
+	.nav-toggle__icon {
+		position: relative;
+		width: 1.05rem;
+		height: 2px;
+		border-radius: 2px;
+		background: currentColor;
+		transition: background-color var(--duration-fast) var(--ease-out);
+	}
+
+	.nav-toggle__icon::before,
+	.nav-toggle__icon::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		border-radius: 2px;
+		background: currentColor;
+		transition: transform var(--duration-fast) var(--ease-out);
+	}
+
+	.nav-toggle__icon::before {
+		transform: translateY(-6px);
+	}
+
+	.nav-toggle__icon::after {
+		transform: translateY(6px);
+	}
+
+	.nav-toggle[aria-expanded='true'] .nav-toggle__icon {
+		background: transparent;
+	}
+
+	.nav-toggle[aria-expanded='true'] .nav-toggle__icon::before {
+		transform: rotate(45deg);
+	}
+
+	.nav-toggle[aria-expanded='true'] .nav-toggle__icon::after {
+		transform: rotate(-45deg);
+	}
+
 	.site-nav {
 		display: flex;
 		align-items: center;
@@ -408,10 +581,13 @@ function menuHasActive(tools: { path: string }[]) {
 	}
 
 	.site-nav__link {
-		padding: 0.4rem 0.55rem;
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.5rem;
+		padding: 0.4rem 0.7rem;
 		border-radius: var(--radius-pill);
 		color: var(--color-muted);
-		font-size: 0.92rem;
+		font-size: 0.9rem;
 		font-weight: 600;
 		text-decoration: none;
 		white-space: nowrap;
@@ -437,11 +613,12 @@ function menuHasActive(tools: { path: string }[]) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		padding: 0.4rem 0.55rem;
+		min-height: 2.5rem;
+		padding: 0.4rem 0.7rem;
 		border-radius: var(--radius-pill);
 		color: var(--color-muted);
 		font: inherit;
-		font-size: 0.92rem;
+		font-size: 0.9rem;
 		font-weight: 600;
 		cursor: pointer;
 		transition: color var(--duration-fast) var(--ease-out);
@@ -501,7 +678,9 @@ function menuHasActive(tools: { path: string }[]) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
+		min-height: 2.5rem;
 		padding: 0.55rem 1.1rem;
+		white-space: nowrap;
 		border: 0;
 		border-radius: var(--radius-pill);
 		background: var(--color-accent);
@@ -584,6 +763,7 @@ function menuHasActive(tools: { path: string }[]) {
 		display: flex;
 		align-items: center;
 		gap: 0.65rem;
+		min-height: 2.5rem;
 		padding: 0.45rem 0.25rem;
 		border-radius: var(--radius-sm);
 		color: var(--color-fg);
@@ -630,7 +810,7 @@ function menuHasActive(tools: { path: string }[]) {
 	.site-footer__top {
 		display: flex;
 		flex-wrap: wrap;
-		align-items: flex-end;
+		align-items: flex-start;
 		justify-content: space-between;
 		gap: var(--space-5) var(--space-6);
 		padding-bottom: var(--space-5);
@@ -641,7 +821,8 @@ function menuHasActive(tools: { path: string }[]) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.55rem;
-		margin: 0 0 0.35rem;
+		min-height: 2.5rem;
+		margin: 0 0 0.15rem;
 		font-family: var(--font-display);
 		font-size: 1.2rem;
 		font-weight: 800;
@@ -657,16 +838,34 @@ function menuHasActive(tools: { path: string }[]) {
 	.site-footer__tag {
 		margin: 0;
 		color: var(--color-footer-muted);
-		font-size: 0.92rem;
+		font-size: 0.9rem;
 	}
 
-	.site-footer__links {
+	.site-footer__cols {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem 1.25rem;
+		gap: var(--space-5) var(--space-8);
 	}
 
-	.site-footer__links a {
+	.site-footer__heading {
+		margin: 0 0 var(--space-2);
+		color: var(--color-footer-fg);
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.site-footer__col ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.site-footer__col a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 2.5rem;
 		color: var(--color-footer-muted);
 		font-size: 0.95rem;
 		font-weight: 500;
@@ -674,8 +873,12 @@ function menuHasActive(tools: { path: string }[]) {
 		transition: color var(--duration-fast) var(--ease-out);
 	}
 
-	.site-footer__links a:hover {
+	.site-footer__col a:hover {
 		color: #fff;
+	}
+
+	.site-footer__col a:focus-visible {
+		outline-color: #fff;
 	}
 
 	.site-footer__copy {
@@ -684,48 +887,98 @@ function menuHasActive(tools: { path: string }[]) {
 		font-size: 0.85rem;
 	}
 
-	@media (max-width: 720px) {
+	@media (max-width: 960px) {
 		.site-header__inner {
-			padding: 0.65rem 1rem;
+			padding: 0.5rem 1rem;
 		}
 
+		.nav-toggle {
+			display: inline-flex;
+		}
+
+		/* Collapsed by default; the Menu button reveals a full-width panel. */
 		.site-nav {
-			gap: 0.25rem 0.65rem;
-			overflow-x: auto;
-			-webkit-overflow-scrolling: touch;
-			scrollbar-width: none;
+			display: none;
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			flex-direction: column;
+			align-items: stretch;
+			justify-content: flex-start;
+			gap: 0.15rem;
+			max-height: calc(100dvh - 4rem);
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			padding: 0.5rem 1rem 1rem;
+			border-bottom: 1px solid var(--color-border);
+			background: #fff;
+			box-shadow: var(--shadow-menu);
 		}
 
-		.site-nav::-webkit-scrollbar {
-			display: none;
+		.site-header[data-nav-open] .site-nav {
+			display: flex;
+			animation: mega-in var(--duration-med) var(--ease-out);
 		}
 
 		.site-nav__link,
 		.nav-drop__trigger {
-			font-size: 0.86rem;
-			padding: 0.35rem 0.4rem;
+			width: 100%;
+			justify-content: space-between;
+			min-height: 2.75rem;
+			padding: 0.5rem 0.75rem;
+			border-radius: var(--radius-md);
+			font-size: 1rem;
+		}
+
+		.nav-drop,
+		.mega {
+			width: 100%;
+		}
+
+		.mega {
+			margin-top: 0.35rem;
 		}
 
 		.mega__trigger {
-			padding: 0.45rem 0.9rem;
-			font-size: 0.85rem;
+			width: 100%;
+			justify-content: space-between;
+			min-height: 2.75rem;
+			padding: 0.5rem 1rem;
+			font-size: 1rem;
 		}
 
+		/* Panels expand inline (accordion) instead of floating over the page. */
 		.nav-drop__panel,
 		.mega__panel {
-			position: fixed;
-			top: 3.5rem;
-			left: 0.75rem;
-			right: 0.75rem;
+			position: static;
 			width: auto;
+			min-width: 0;
 			max-width: none;
-			max-height: min(65vh, 26rem);
+			max-height: none;
+			overflow: visible;
+			padding: 0.25rem 0 0.5rem 0.75rem;
+			border: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+			animation: none;
+		}
+
+		.mega__list a {
+			min-height: 2.75rem;
+		}
+
+		.site-footer__cols {
+			width: 100%;
+			gap: var(--space-4) var(--space-6);
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.nav-drop__panel,
-		.mega__panel {
+		.mega__panel,
+		.site-header[data-nav-open] .site-nav {
 			animation: none;
 		}
 	}

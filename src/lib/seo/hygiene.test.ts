@@ -37,4 +37,13 @@ describe('T08-01 production hygiene', () => {
 		expect(robots).toMatch(/Disallow:\s*\/tools\/template-demo/);
 		expect(robots).toContain('Sitemap: https://tools.tommyfx.pk/sitemap-index.xml');
 	});
+
+	it('tool page <title> values stay within 60 characters', () => {
+		for (const tool of liveTools()) {
+			const src = readFileSync(resolve(root, `src/pages${tool.path}.astro`), 'utf8');
+			const title = src.match(/\btitle="([^"]+)"/)?.[1];
+			expect(title, `no title in ${tool.path}`).toBeTruthy();
+			expect(title!.length, `${tool.path}: "${title}"`).toBeLessThanOrEqual(60);
+		}
+	});
 });

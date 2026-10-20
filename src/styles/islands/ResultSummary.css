@@ -1,0 +1,223 @@
+/*
+ * Calculator chrome shared by work-hours, advertising-metrics, freelancer-rate.
+ *
+ * .calc-split   - inputs on the left, answer in a sticky right column once the
+ *                 tool panel is wide enough (container query, not viewport).
+ *                 Narrow panels stack: inputs, then answer.
+ * .result-summary - headline value + unit, supporting rows, assumption.
+ */
+
+.calc-split {
+	container-type: inline-size;
+	container-name: calc;
+}
+
+.calc-split__layout {
+	display: grid;
+	gap: var(--space-4);
+	align-items: start;
+}
+
+.calc-split__main,
+.calc-split__side {
+	min-width: 0;
+}
+
+.calc-split__side {
+	display: grid;
+	gap: var(--space-3);
+}
+
+@container calc (min-width: 640px) {
+	.calc-split__layout {
+		grid-template-columns: minmax(0, 1fr) minmax(15rem, 18.5rem);
+		gap: var(--space-5);
+	}
+
+	.calc-split__side {
+		position: sticky;
+		top: 4.75rem;
+	}
+}
+
+/* ---- Result summary ---------------------------------------------------- */
+
+.result-summary {
+	padding: var(--space-4);
+	border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+	border-radius: var(--radius-lg);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-accent) 10%, var(--color-surface)) 0%,
+		var(--color-surface) 100%
+	);
+}
+
+.result-summary__label {
+	margin: 0 0 var(--space-1);
+	font-size: 0.8rem;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-accent-deep);
+}
+
+.result-summary__value {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.15rem 0.45rem;
+	margin: 0;
+	font-family: var(--font-display);
+}
+
+.result-summary__value strong {
+	font-size: clamp(2rem, 6vw, 2.5rem);
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-fg);
+	overflow-wrap: anywhere;
+}
+
+.result-summary__unit {
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--color-muted);
+}
+
+.result-summary__detail {
+	margin: var(--space-2) 0 0;
+	font-size: 0.9rem;
+	line-height: 1.4;
+	color: var(--color-muted);
+}
+
+.result-summary__detail strong {
+	color: var(--color-fg);
+}
+
+.result-summary__list {
+	display: grid;
+	margin: var(--space-3) 0 0;
+	padding: 0;
+}
+
+.result-summary__row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	column-gap: var(--space-3);
+	align-items: baseline;
+	padding: 0.55rem 0;
+	border-top: 1px solid var(--color-border);
+}
+
+.result-summary__row dt {
+	margin: 0;
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--color-fg);
+}
+
+.result-summary__row dd {
+	margin: 0;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.result-summary__row dd strong {
+	font-weight: 800;
+	color: var(--color-fg);
+}
+
+.result-summary__row-unit {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--color-muted);
+}
+
+.result-summary__row dd.result-summary__note {
+	grid-column: 1 / -1;
+	margin-top: 0.15rem;
+	text-align: left;
+	font-size: 0.8rem;
+	font-weight: 500;
+	line-height: 1.35;
+	color: var(--color-muted);
+}
+
+.result-summary__assumption {
+	margin: var(--space-3) 0 0;
+	padding-top: var(--space-3);
+	border-top: 1px dashed var(--color-border-strong);
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--color-muted);
+}
+
+.result-summary--error {
+	border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
+	background: color-mix(in srgb, var(--color-danger) 6%, var(--color-surface));
+}
+
+.result-summary--error .result-summary__label {
+	color: var(--color-danger);
+}
+
+.result-summary__message {
+	margin: 0;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--color-danger);
+}
+
+/* Optional "what do these mean" disclosure under the rows. */
+.result-summary__more {
+	margin: var(--space-3) 0 0;
+	padding-top: var(--space-3);
+	border-top: 1px solid var(--color-border);
+	font-size: 0.85rem;
+}
+
+.result-summary__more summary {
+	min-height: 2.75rem;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	font-weight: 700;
+	color: var(--color-accent-deep);
+}
+
+.result-summary__more summary:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: var(--focus-offset);
+	border-radius: var(--radius-sm);
+}
+
+.result-summary__more dl {
+	margin: 0;
+}
+
+.result-summary__more dt {
+	margin-top: var(--space-2);
+	font-weight: 700;
+	color: var(--color-fg);
+}
+
+.result-summary__more dd {
+	margin: 0.1rem 0 0;
+	color: var(--color-muted);
+}
+
+@media print {
+	.result-summary {
+		break-inside: avoid;
+		background: none;
+	}
+}
+
+.result-summary__formula {
+	font-size: 0.8rem;
+	font-variant-numeric: tabular-nums;
+	color: var(--color-muted);
+}

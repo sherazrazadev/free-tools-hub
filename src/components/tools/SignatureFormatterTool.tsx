@@ -1,6 +1,11 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useToolAnalytics } from "../../lib/analytics/useToolAnalytics";
+import { formatBytes } from "../../lib/format";
 import { bytesToKbLabel } from "../../lib/tools/image-compressor/plan";
+import {
+  outputSizeProblem,
+  parsePixelField,
+} from "../../lib/tools/image-resizer/dimensions";
 import { loadImageFromFile } from "../../lib/tools/image-resizer/loadImage";
 import { revokeObjectUrl } from "../../lib/tools/image-resizer/objectUrl";
 import {
@@ -37,8 +42,8 @@ export default function SignatureFormatterTool() {
   const presets = useMemo(() => listShippedPresets(), []);
   const [source, setSource] = useState<SourceState | null>(null);
   const [presetId, setPresetId] = useState("");
-  const [width, setWidth] = useState(300);
-  const [height, setHeight] = useState(80);
+  const [widthText, setWidthText] = useState("300");
+  const [heightText, setHeightText] = useState("80");
   const [format, setFormat] = useState<SignatureFormat>("image/png");
   const [qualityPct, setQualityPct] = useState(90);
   const [maxKb, setMaxKb] = useState("");
@@ -94,16 +99,17 @@ export default function SignatureFormatterTool() {
 
   async function onFileChange(fileList: FileList | null) {
     setError(null);
-    clearSource();
     const file = fileList?.[0];
     if (!file) return;
     setBusy(true);
     const loaded = await loadImageFromFile(file);
     setBusy(false);
+    // A bad replacement must not throw away the image already loaded.
     if (!loaded.ok) {
       setError(loaded.error.message);
       return;
     }
+    clearSource();
     sourceUrlRef.current = loaded.value.objectUrl;
     setSource({
       image: loaded.value.image,
@@ -121,15 +127,15 @@ export default function SignatureFormatterTool() {
     if (!id) return;
     const p = presets.find((x) => x.id === id);
     if (!p) return;
-    setWidth(p.width);
-    setHeight(p.height);
+    setWidthText(String(p.width));
+    setHeightText(String(p.height));
     const fmt = (p.formats[0] ?? "image/png") as SignatureFormat;
     setFormat(fmt);
     setMaxKb(p.maxKb !== null ? String(p.maxKb) : "");
   }
 
   function clampCrop(next: NormCrop): NormCrop {
-    const min = 0.05;
+    const min = 0.1;
     let { x, y, width, height } = next;
     width = Math.min(1, Math.max(min, width));
     height = Math.min(1, Math.max(min, height));
@@ -144,7 +150,7 @@ export default function SignatureFormatterTool() {
     dx: number,
     dy: number,
   ): NormCrop {
-    const min = 0.05;
+    const min = 0.1;
     if (mode === "move") {
       return clampCrop({
         x: orig.x + dx,
@@ -218,9 +224,39 @@ export default function SignatureFormatterTool() {
     }
   }
 
+  /** Arrow keys nudge a corner by 1% (hold Shift for 5%). Keeps the crop usable without a pointer. */
+  function onHandleKeyDown(
+    mode: "nw" | "ne" | "sw" | "se",
+    e: React.KeyboardEvent<HTMLElement>,
+  ) {
+    const step = e.shiftKey ? 0.05 : 0.01;
+    let dx = 0;
+    let dy = 0;
+    if (e.key === "ArrowLeft") dx = -step;
+    else if (e.key === "ArrowRight") dx = step;
+    else if (e.key === "ArrowUp") dy = -step;
+    else if (e.key === "ArrowDown") dy = step;
+    else return;
+    e.preventDefault();
+    e.stopPropagation();
+    setCrop((current) => applyDrag(mode, current, dx, dy));
+    clearPreview();
+  }
+
   async function runFormat(download: boolean) {
     if (!source) {
       setError("Choose a signature image first.");
+      return;
+    }
+    const outW = parsePixelField(widthText);
+    const outH = parsePixelField(heightText);
+    if (outW === null || outH === null) {
+      setError("Enter a width and height of at least 1 pixel.");
+      return;
+    }
+    const sizeProblem = outputSizeProblem(outW, outH);
+    if (sizeProblem) {
+      setError(sizeProblem);
       return;
     }
     let maxBytes: number | null = null;
@@ -247,8 +283,8 @@ export default function SignatureFormatterTool() {
         crop: pixelCrop,
         sourceWidth: source.naturalWidth,
         sourceHeight: source.naturalHeight,
-        outWidth: width,
-        outHeight: height,
+        outWidth: outW,
+        outHeight: outH,
         format,
         background,
         threshold: useThreshold ? threshold : null,
@@ -297,6 +333,16 @@ export default function SignatureFormatterTool() {
         accept={accept}
         disabled={busy}
         fileLabel={source?.file.name ?? null}
+        fileMeta={
+          source
+            ? `${source.naturalWidth}×${source.naturalHeight} · ${formatBytes(source.file.size)}`
+            : null
+        }
+        onClear={() => {
+          clearSource();
+          setError(null);
+        }}
+        error={source ? null : error}
         hint={`JPEG, PNG, WebP, or GIF · max ${maxMb} MB · local only — not an official acceptance guarantee`}
         onFiles={(files) => void onFileChange(files)}
       />
@@ -361,7 +407,7 @@ export default function SignatureFormatterTool() {
             <p className="sf-tool__label">Crop</p>
             <p className="sf-tool__hint">
               Drag inside the box to move. Drag any corner to resize the
-              selection.
+              selection, or focus a corner and use the arrow keys.
             </p>
             <div className="sf-tool__stage" ref={stageRef}>
               <img
@@ -401,6 +447,7 @@ export default function SignatureFormatterTool() {
                     onPointerMove={onCropPointerMove}
                     onPointerUp={onCropPointerUp}
                     onPointerCancel={onCropPointerUp}
+                    onKeyDown={(e) => onHandleKeyDown(corner, e)}
                   />
                 ))}
               </div>
@@ -423,12 +470,14 @@ export default function SignatureFormatterTool() {
         <label className="sf-tool__field">
           <span>Width (px)</span>
           <input
-            type="number"
-            min={1}
-            value={width}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={widthText}
             disabled={busy}
             onChange={(e) => {
-              setWidth(Math.max(1, Math.floor(Number(e.target.value) || 1)));
+              setWidthText(e.target.value);
               clearPreview();
             }}
           />
@@ -436,12 +485,14 @@ export default function SignatureFormatterTool() {
         <label className="sf-tool__field">
           <span>Height (px)</span>
           <input
-            type="number"
-            min={1}
-            value={height}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
+            value={heightText}
             disabled={busy}
             onChange={(e) => {
-              setHeight(Math.max(1, Math.floor(Number(e.target.value) || 1)));
+              setHeightText(e.target.value);
               clearPreview();
             }}
           />
@@ -549,8 +600,9 @@ export default function SignatureFormatterTool() {
           className="btn btn--ghost"
           disabled={!source || busy}
           onClick={() => void runFormat(false)}
+          aria-busy={busy}
         >
-          Update preview
+          {busy ? "Working…" : "Update preview"}
         </button>
         <button
           type="button"
@@ -560,22 +612,9 @@ export default function SignatureFormatterTool() {
         >
           Download signature
         </button>
-        {source ? (
-          <button
-            type="button"
-            className="btn btn--ghost"
-            disabled={busy}
-            onClick={() => {
-              clearSource();
-              setError(null);
-            }}
-          >
-            Clear
-          </button>
-        ) : null}
       </div>
 
-      {error ? (
+      {error && source ? (
         <p className="sf-tool__error" role="alert">
           {error}
         </p>

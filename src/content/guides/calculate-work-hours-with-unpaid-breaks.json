@@ -1,0 +1,56 @@
+{
+  "slug": "calculate-work-hours-with-unpaid-breaks",
+  "title": "How to calculate work hours with breaks",
+  "description": "Work out net hours from start and end times, subtract unpaid breaks, handle overnight shifts, and total a week. Step by step, with a worked example.",
+  "lede": "Start time, end time, unpaid break: three numbers give you the hours you actually worked.",
+  "publishDate": "2026-10-20",
+  "tool": "work-hours",
+  "problem": "Timesheets go wrong in the same few places: the unpaid break gets forgotten, a shift that ends after midnight comes out negative, and minutes are added as if they were decimals (8:30 is not 8.30 hours). A fixed order of steps avoids all three.",
+  "steps": [
+    {
+      "title": "Write down start, end and unpaid break",
+      "body": "Use the times you actually worked, in 24-hour form if that is easier (17:30 instead of 5:30 pm). The break is only the unpaid minutes. A paid tea break is not subtracted."
+    },
+    {
+      "title": "Subtract start from end",
+      "body": "09:00 to 17:30 is 8 hours 30 minutes elapsed. If the shift ends after midnight, add 24 hours to the end time first. A 22:00 to 06:00 shift is 8 hours, not minus 16."
+    },
+    {
+      "title": "Subtract the unpaid break",
+      "body": "Take the break minutes off the elapsed time. 8 hours 30 minutes minus a 30-minute break leaves 8 hours of net time."
+    },
+    {
+      "title": "Convert minutes to decimal hours when you need a number to multiply",
+      "body": "Divide the minutes by 60. 7 hours 45 minutes is 7.75 hours. This is the figure you multiply by an hourly rate; the 7:45 form is only for reading."
+    },
+    {
+      "title": "Add the days for a weekly total",
+      "body": "Add each day's net time, not each day's elapsed time. Five days of 8 hours net is 40 hours. Do the minutes first, then convert, so rounding errors do not pile up."
+    },
+    {
+      "title": "Let the calculator do the arithmetic",
+      "body": "In the work hours calculator, pick Day or Week, enter each shift's start, end and break minutes, and tick Ends next day for overnight shifts. The totals update as you type, and you can download a CSV or print the summary."
+    }
+  ],
+  "example": "Monday 09:00 to 17:30 with a 30-minute unpaid break: 8h 30m elapsed, minus 30m, is 8h net (8.00 decimal). Repeat for Tuesday to Friday and the week is 40.00 hours. If you work 45 net hours with overtime starting after 40, the extra 5 hours are the overtime hours; at a rate of 20 and a multiplier of 1.5 the estimated gross is 950.00 (40 x 20 + 5 x 20 x 1.5).",
+  "limitations": [
+    "This is arithmetic, not payroll or legal advice. Whether a break is unpaid, and when overtime starts, depends on your contract and local rules.",
+    "Overtime and pay figures are estimates and ignore tax, benefits and deductions.",
+    "Two shifts on the same day cannot overlap. Back-to-back shifts are fine.",
+    "Rounding rules your employer applies (for example to the nearest 15 minutes) are not applied for you."
+  ],
+  "faq": [
+    {
+      "q": "How do I calculate hours for a shift that ends after midnight?",
+      "a": "Add 24 hours to the end time, then subtract the start time. 22:00 to 06:00 becomes 30:00 minus 22:00, which is 8 hours. In the calculator, tick Ends next day."
+    },
+    {
+      "q": "Should a lunch break be subtracted?",
+      "a": "Only if it is unpaid. Subtract the minutes you were not paid for and leave paid breaks in. Your contract or employer decides which kind it is."
+    },
+    {
+      "q": "Why is 7:45 not 7.45 hours?",
+      "a": "Minutes are out of 60, decimals out of 100. 45 minutes is 45 / 60 = 0.75 of an hour, so 7:45 is 7.75 hours."
+    }
+  ]
+}
