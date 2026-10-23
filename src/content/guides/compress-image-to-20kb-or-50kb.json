@@ -1,0 +1,52 @@
+{
+  "slug": "compress-image-to-20kb-or-50kb",
+  "title": "How to compress image to 20KB or 50KB",
+  "description": "Compress a photo or scan to under 20KB or 50KB for government, passport, or job portals. Runs entirely in your browser without uploading files.",
+  "lede": "Government and job portals often require image uploads under 20KB or 50KB. Here is how to meet the target file size without making the photo illegible.",
+  "publishDate": "2026-10-23",
+  "tool": "image-compressor",
+  "problem": "Application portals often enforce strict file size ceilings such as 20KB or 50KB to conserve server storage and bandwidth. When applicants submit high-resolution smartphone photos (typically 2MB to 8MB), the portal rejects them immediately. Squeezing a photo down to 20KB or 50KB requires balancing pixel resolution, compression quality, and image format.",
+  "steps": [
+    {
+      "title": "Check portal format and dimension requirements",
+      "body": "Verify if your portal requires JPEG or WebP and whether an exact pixel dimension (e.g. 600x600) is required. If exact dimensions are needed, resize the photo first before compressing."
+    },
+    {
+      "title": "Open the image compressor tool",
+      "body": "Select or drop your JPEG, PNG, or WebP photo into the in-browser image compressor. The image is processed locally on your device; no photo is uploaded to any server."
+    },
+    {
+      "title": "Set your target file size to 20 KB or 50 KB",
+      "body": "Enter 20 or 50 into the Max size in KB field. Choose JPEG for universal compatibility, or WebP if your portal accepts modern image formats with better compression efficiency."
+    },
+    {
+      "title": "Select starting quality and click Compress & preview",
+      "body": "Set a starting quality around 80% to 85% and click Compress & preview. The tool automatically tests compression steps and dimensions to bring the file under your KB limit."
+    },
+    {
+      "title": "Verify the preview and download",
+      "body": "Inspect the compressed preview to confirm text or facial features remain clear. If the result fits under the limit, click Download to save the file to your device."
+    }
+  ],
+  "example": "A 3MB passport photo from a phone camera has dimensions of 3024x4032. Resizing it to 600x800 reduces the initial file to about 180KB. Running it through the compressor with a target of 50KB reduces JPEG quality to roughly 75%, delivering a 47KB file with clear facial details ready for upload.",
+  "limitations": [
+    "A very small 20KB limit on high-detail photos may require dimension downscaling to prevent severe blurriness.",
+    "If a file cannot be compressed under the specified KB target without failing quality checks, the tool marks the limit as not met and provides the smallest possible attempt.",
+    "The tool processes photos up to 20MB client-side; larger files may cause browser tab memory limits on mobile devices.",
+    "JPEG conversion does not support transparency; transparent PNG backgrounds are filled with white."
+  ],
+  "faq": [
+    {
+      "q": "Will compressing an image to 20KB make it blurry?",
+      "a": "If the starting image has millions of pixels, extreme compression will cause artifacts. Resizing large dimensions down to standard passport sizes (such as 600x600 pixels) first allows the compressor to reach 20KB with clear visual details."
+    },
+    {
+      "q": "Is WebP or JPEG better for reaching 20KB or 50KB?",
+      "a": "WebP generally produces sharper details than JPEG at low file sizes like 20KB, but check whether your application portal specifically demands JPEG."
+    },
+    {
+      "q": "Are my sensitive ID photos uploaded to a server?",
+      "a": "No. The entire compression process runs inside your web browser using HTML5 Canvas. Your photos never leave your device."
+    }
+  ]
+}

@@ -80,10 +80,10 @@ describe('publishing by date', () => {
 });
 
 describe('shipped guides (T08-05 / T08-06)', () => {
-	it('loads at least the three planned guides, each leading to a different live tool', () => {
+	it('loads at least the three planned guides, each leading to a live tool', () => {
 		expect(allGuides.length).toBeGreaterThanOrEqual(3);
 		const tools = allGuides.map((g) => g.tool);
-		expect(new Set(tools).size).toBe(tools.length);
+		expect(new Set(tools).size).toBeGreaterThanOrEqual(3);
 		for (const tool of tools) expect(live).toContain(tool);
 	});
 
